@@ -1083,11 +1083,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@quonfig/javascript@file:../sdk-javascript::locator=%40quonfig%2Freact%40workspace%3A.":
+  version: 0.0.2
+  resolution: "@quonfig/javascript@file:../sdk-javascript#../sdk-javascript::hash=d09a7a&locator=%40quonfig%2Freact%40workspace%3A."
+  dependencies:
+    uuid: "npm:^9.0.1"
+  checksum: 10c0/5959d73b3273c7b7bca3396070e4062a7e877f60b051446818fe83689d179267258e80f43ad7ee977d9fa5995ba351a7680fd244f9abb9a5483b57ce798406a5
+  languageName: node
+  linkType: hard
+
 "@quonfig/react@workspace:.":
   version: 0.0.0-use.local
   resolution: "@quonfig/react@workspace:."
   dependencies:
-    "@reforge-com/javascript": "npm:^0.0.4"
+    "@quonfig/javascript": "file:../sdk-javascript"
     "@testing-library/jest-dom": "npm:^5.16.5"
     "@testing-library/react": "npm:^13.3.0"
     "@types/jest": "npm:^28.1.6"
@@ -1115,19 +1124,10 @@ __metadata:
     tsup: "npm:^8.4.0"
     typescript: "npm:^4.7.4"
   peerDependencies:
-    "@reforge-com/javascript": ^0.0.4
+    "@quonfig/javascript": ">=0.0.2"
     react: ^16 || ^17 || ^18 || ^19
   languageName: unknown
   linkType: soft
-
-"@reforge-com/javascript@npm:^0.0.4":
-  version: 0.0.4
-  resolution: "@reforge-com/javascript@npm:0.0.4"
-  dependencies:
-    uuid: "npm:^9.0.1"
-  checksum: 10c0/0bcf12a1d13c6011b5ec8d1866a739a3997c9e12ce3743744a335353da8ab20f3ea6d6ec4c6e6699b92c9e9712d85e190a0535326bfa15222a122aaa608c0289
-  languageName: node
-  linkType: hard
 
 "@rollup/rollup-android-arm-eabi@npm:4.46.2":
   version: 4.46.2

@@ -1,15 +1,15 @@
 import React, { PropsWithChildren } from "react";
 import {
-  reforge,
-  type ReforgeInitParams,
+  quonfig,
+  type InitOptions,
   type ConfigValue,
   type Contexts,
-  Context,
-  Reforge,
+  Quonfig,
   TypedFrontEndConfigurationRaw,
   FrontEndConfigurationRaw,
   Duration,
-} from "@reforge-com/javascript";
+  encodeContexts,
+} from "@quonfig/javascript";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version } = require("../package.json");
@@ -28,26 +28,25 @@ type ClassMethods<T> = { [K in keyof T]: T[K] };
 
 type QuonfigTypesafeClass<T = unknown> = new (
   // eslint-disable-next-line no-shadow
-  quonfig: Reforge
+  quonfig: Quonfig
 ) => T;
 
 type SharedSettings = Partial<
   Pick<
-    ReforgeInitParams,
+    InitOptions,
     | "sdkKey"
-    | "endpoints"
-    | "apiEndpoint"
+    | "apiUrl"
+    | "apiUrls"
     | "timeout"
     | "collectEvaluationSummaries"
     | "collectLoggerNames"
-    | "collectContextMode"
   >
 > & {
   // We need to redefine the afterEvaluationCallback type to ensure proper dynamic resolution of K
   afterEvaluationCallback?: <K extends keyof TypedFrontEndConfigurationRaw>(
     key: K,
     value: TypedFrontEndConfigurationRaw[K],
-    context: Context | undefined
+    contexts: Contexts | undefined
   ) => void;
   pollInterval?: number;
   onError?: (error: Error) => void;
@@ -79,7 +78,7 @@ export type BaseContext = {
     key: K
   ) => boolean;
   loading: boolean;
-  quonfig: typeof reforge;
+  quonfig: typeof quonfig;
   keys: (keyof TypedFrontEndConfigurationRaw)[];
   settings: SharedSettings;
 };
@@ -93,7 +92,7 @@ export const defaultContext: BaseContext = {
   keys: [],
   loading: true,
   contextAttributes: {},
-  quonfig: reforge,
+  quonfig,
   settings: {},
 };
 
@@ -137,11 +136,11 @@ let globalQuonfigIsTaken = false;
 
 export const assignQuonfigClient = () => {
   if (globalQuonfigIsTaken) {
-    return new Reforge();
+    return new Quonfig();
   }
 
   globalQuonfigIsTaken = true;
-  return reforge;
+  return quonfig;
 };
 
 export type QuonfigProviderProps = SharedSettings & {
@@ -150,10 +149,10 @@ export type QuonfigProviderProps = SharedSettings & {
   initialFlags?: Record<string, unknown>;
 };
 
-const getContext = (
+const getContextKey = (
   contextAttributes: Contexts,
   onError: (e: Error) => void
-): [Context, string] => {
+): string => {
   try {
     if (Object.keys(contextAttributes).length === 0) {
       // eslint-disable-next-line no-console
@@ -162,13 +161,10 @@ const getContext = (
       );
     }
 
-    const context = new Context(contextAttributes);
-    const contextKey = context.encode();
-
-    return [context, contextKey];
+    return encodeContexts(contextAttributes);
   } catch (e) {
     onError(e as Error);
-    return [new Context({}), ""];
+    return "";
   }
 };
 
@@ -182,25 +178,23 @@ function QuonfigProvider({
   initialFlags,
   children,
   timeout,
-  endpoints,
-  apiEndpoint,
+  apiUrl,
+  apiUrls,
   pollInterval,
   afterEvaluationCallback = undefined,
   collectEvaluationSummaries,
   collectLoggerNames,
-  collectContextMode,
 }: PropsWithChildren<QuonfigProviderProps>) {
   const settings = {
     sdkKey,
-    endpoints,
-    apiEndpoint,
+    apiUrl,
+    apiUrls,
     timeout,
     pollInterval,
     onError,
     afterEvaluationCallback,
     collectEvaluationSummaries,
     collectLoggerNames,
-    collectContextMode,
   };
 
   // We use this state to prevent a double-init when useEffect fires due to
@@ -214,9 +208,9 @@ function QuonfigProvider({
   // changes
   const [loadedContextKey, setLoadedContextKey] = React.useState("");
 
-  const quonfigClient: Reforge = React.useMemo(() => assignQuonfigClient(), []);
+  const quonfigClient: Quonfig = React.useMemo(() => assignQuonfigClient(), []);
 
-  const [context, contextKey] = getContext(contextAttributes, onError);
+  const contextKey = getContextKey(contextAttributes, onError);
 
   if (initialFlags && initialLoad) {
     quonfigClient.hydrate(initialFlags);
@@ -247,11 +241,17 @@ function QuonfigProvider({
           throw new Error("QuonfigProvider: sdkKey is required");
         }
 
-        const initOptions: Parameters<typeof quonfigClient.init>[0] = {
-          context,
-          ...settings,
-          clientNameString: "sdk-react",
-          clientVersionString: version,
+        quonfigClient.clientNameString = "sdk-react";
+
+        const initOptions: InitOptions = {
+          context: contextAttributes,
+          sdkKey,
+          apiUrl,
+          apiUrls,
+          timeout,
+          afterEvaluationCallback,
+          collectEvaluationSummaries,
+          collectLoggerNames,
         };
 
         quonfigClient
@@ -272,7 +272,7 @@ function QuonfigProvider({
         mostRecentlyLoadingContextKey.current = contextKey;
 
         quonfigClient
-          .updateContext(context)
+          .updateContext(contextAttributes)
           .then(() => {
             setLoadedContextKey(contextKey);
             setLoading(false);

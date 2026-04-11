@@ -2,7 +2,7 @@
 import React, { act } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
-import { ContextValue, Reforge, Contexts } from "@reforge-com/javascript";
+import { ContextValue, Quonfig, Contexts } from "@quonfig/javascript";
 import { QuonfigProvider, useQuonfig, createQuonfigHook } from "../index";
 
 type Config = { [key: string]: any };
@@ -68,6 +68,7 @@ describe("QuonfigProvider", () => {
       </QuonfigProvider>
     );
 
+  // Evaluation format for @quonfig/javascript: { value: { type: "string", value: "..." } }
   const stubConfig = (config: Config) =>
     new Promise((resolve) => {
       global.fetch = jest.fn(() =>
@@ -114,7 +115,7 @@ describe("QuonfigProvider", () => {
   });
 
   it("allows providing flag values", async () => {
-    await renderWithConfig({ greeting: { value: { string: "CUSTOM" } } });
+    await renderWithConfig({ greeting: { value: { type: "string", value: "CUSTOM" } } });
 
     const alert = screen.queryByRole("alert");
     expect(alert).toHaveTextContent("CUSTOM");
@@ -124,8 +125,8 @@ describe("QuonfigProvider", () => {
 
   it("allows providing true flag booleans", async () => {
     await renderWithConfig({
-      greeting: { value: { string: "CUSTOM" } },
-      secretFeature: { value: { boolean: true } },
+      greeting: { value: { type: "string", value: "CUSTOM" } },
+      secretFeature: { value: { type: "bool", value: true } },
     });
 
     const alert = screen.queryByRole("alert");
@@ -136,8 +137,8 @@ describe("QuonfigProvider", () => {
 
   it("allows providing false flag booleans", async () => {
     await renderWithConfig({
-      greeting: { value: { string: "CUSTOM" } },
-      secretFeature: { value: { boolean: false } },
+      greeting: { value: { type: "string", value: "CUSTOM" } },
+      secretFeature: { value: { type: "bool", value: false } },
     });
 
     const alert = screen.queryByRole("alert");
@@ -148,7 +149,7 @@ describe("QuonfigProvider", () => {
 
   it("allows providing json configs", async () => {
     await renderWithConfig({
-      subtitle: { value: { json: '{ "actualSubtitle": "Json Subtitle" }' } },
+      subtitle: { value: { type: "json", value: '{ "actualSubtitle": "Json Subtitle" }' } },
     });
 
     const alert = screen.queryByRole("banner");
@@ -158,8 +159,8 @@ describe("QuonfigProvider", () => {
   it("warns when you do not provide contextAttributes", async () => {
     const rendered = await renderWithConfig(
       {
-        greeting: { value: { string: "CUSTOM" } },
-        secretFeature: { value: { boolean: true } },
+        greeting: { value: { type: "string", value: "CUSTOM" } },
+        secretFeature: { value: { type: "bool", value: true } },
       },
       { contextAttributes: { user: { email: "old@example.com" } } }
     );
@@ -168,8 +169,8 @@ describe("QuonfigProvider", () => {
     expect(alert).toHaveTextContent("CUSTOM");
 
     const newConfigPromise = stubConfig({
-      greeting: { value: { string: "ANOTHER" } },
-      secretFeature: { value: { boolean: false } },
+      greeting: { value: { type: "string", value: "ANOTHER" } },
+      secretFeature: { value: { type: "bool", value: false } },
     });
 
     act(() => {
@@ -199,7 +200,7 @@ describe("QuonfigProvider", () => {
       console.warn("setContextAttributes not set");
     };
 
-    const promise = stubConfig({ greeting: { value: { string: "CUSTOM" } } });
+    const promise = stubConfig({ greeting: { value: { type: "string", value: "CUSTOM" } } });
 
     function Wrapper({ context }: { context: Contexts }) {
       const [contextAttributes, innerSetContextAttributes] = React.useState(context);
@@ -223,7 +224,7 @@ describe("QuonfigProvider", () => {
     expect(alert).toHaveTextContent("CUSTOM");
 
     const newRequestPromise = stubConfig({
-      greeting: { value: { string: "UPDATED FROM CONTEXT" } },
+      greeting: { value: { type: "string", value: "UPDATED FROM CONTEXT" } },
     });
 
     setContextAttributes({ user: { email: "foo@example.com" } });
@@ -274,7 +275,9 @@ describe("QuonfigProvider", () => {
 
     const callback = jest.fn();
 
-    const promise = stubConfig({ greeting: { value: { string: "afterEvaluationCallback" } } });
+    const promise = stubConfig({
+      greeting: { value: { type: "string", value: "afterEvaluationCallback" } },
+    });
 
     render(
       <QuonfigProvider
@@ -295,26 +298,23 @@ describe("QuonfigProvider", () => {
     // eslint-disable-next-line no-promise-executor-return
     await new Promise((r) => setTimeout(r, 1));
 
-    expect(callback).toHaveBeenCalledWith("greeting", "afterEvaluationCallback", {
-      contexts: context,
-    });
+    expect(callback).toHaveBeenCalledWith("greeting", "afterEvaluationCallback", context);
   });
 
-  it("triggers onError if something goes wrong", async () => {
-    const context = { user: { name: "🥰", phone: "(555) 555–5555" } };
+  it("triggers onError if the fetch fails", async () => {
+    const context = { user: { email: "test@example.com" } };
     const onError = jest.fn();
 
-    await renderWithConfig({}, { contextAttributes: context, onError });
+    global.fetch = jest.fn(() => Promise.reject(new Error("Network error"))) as jest.Mock;
+
+    renderInProvider({ contextAttributes: context, onError });
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
     expect(onError).toHaveBeenCalledWith(
-      expect.objectContaining({
-        // NOTE: While context-encoding bug is fixed in the in-browser version
-        // of prefab-cloud-js since
-        // https://github.com/prefab-cloud/prefab-cloud-js/pull/65 the Node
-        // version (which is only intended to be run in unit-tests) still
-        // exhibits the bug. It is convenient for us to test this onError.
-        name: "InvalidCharacterError",
-        message: "The string to be encoded contains invalid characters.",
-      })
+      expect.objectContaining({ message: expect.stringContaining("Network error") })
     );
 
     const alert = screen.queryByRole("alert");
@@ -330,7 +330,7 @@ describe("createQuonfigHook functionality with QuonfigProvider", () => {
 
   // Create a custom TypesafeClass for testing
   class CustomFeatureFlags {
-    constructor(public quonfig: Reforge) {
+    constructor(public quonfig: Quonfig) {
       this.calculateValue = this.calculateValue.bind(this);
     }
 
@@ -381,9 +381,9 @@ describe("createQuonfigHook functionality with QuonfigProvider", () => {
         ok: true,
         json: () => ({
           evaluations: {
-            greeting: { value: { string: "Hello from Custom Hook" } },
-            "secret.feature": { value: { boolean: true } },
-            "base.value": { value: { int: 20 } },
+            greeting: { value: { type: "string", value: "Hello from Custom Hook" } },
+            "secret.feature": { value: { type: "bool", value: true } },
+            "base.value": { value: { type: "int", value: 20 } },
           },
         }),
       })
@@ -415,7 +415,7 @@ describe("createQuonfigHook functionality with QuonfigProvider", () => {
     const methodSpy = jest.fn().mockReturnValue("test result");
 
     class SpiedClass {
-      constructor(public quonfig: Reforge) {
+      constructor(public quonfig: Quonfig) {
         constructorSpy(quonfig);
       }
 

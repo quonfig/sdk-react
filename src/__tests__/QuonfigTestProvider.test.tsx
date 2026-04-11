@@ -2,7 +2,7 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
-import { Reforge } from "@reforge-com/javascript";
+import { Quonfig } from "@quonfig/javascript";
 import { QuonfigTestProvider, useQuonfig, createQuonfigHook } from "../index";
 
 function MyComponent() {
@@ -87,7 +87,7 @@ describe("QuonfigTestProvider", () => {
 describe("createQuonfigHook functionality with QuonfigTestProvider", () => {
   // Custom TypesafeClass for testing
   class CustomFeatureFlags {
-    constructor(public quonfig: Reforge) {
+    constructor(public quonfig: Quonfig) {
       this.calculateCustomValue = this.calculateCustomValue.bind(this);
     }
 
@@ -169,7 +169,7 @@ describe("createQuonfigHook functionality with QuonfigTestProvider", () => {
     const methodSpy = jest.fn().mockReturnValue("memoized result");
 
     class SpiedClass {
-      constructor(public quonfig: Reforge) {
+      constructor(public quonfig: Quonfig) {
         constructorSpy(quonfig);
         this.testMethod = this.testMethod.bind(this);
       }

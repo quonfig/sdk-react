@@ -44,7 +44,7 @@
     "config"
   ],
   "devDependencies": {
-    "@reforge-com/javascript": "^0.0.4",
+    "@quonfig/javascript": "file:../sdk-javascript",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
     "@types/jest": "^28.1.6",
@@ -73,7 +73,7 @@
     "typescript": "^4.7.4"
   },
   "peerDependencies": {
-    "@reforge-com/javascript": "^0.0.4",
+    "@quonfig/javascript": ">=0.0.2",
     "react": "^16 || ^17 || ^18 || ^19"
   }
 }

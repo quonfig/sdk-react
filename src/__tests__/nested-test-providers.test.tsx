@@ -2,7 +2,7 @@ import React, { act } from "react";
 import "@testing-library/jest-dom/extend-expect";
 import { render, screen } from "@testing-library/react";
 import {
-  reforge as globalQuonfig,
+  quonfig as globalQuonfig,
   QuonfigProvider,
   useQuonfig,
   QuonfigTestProvider,
@@ -168,8 +168,8 @@ it("can nest a real provider within a test provider", async () => {
   };
 
   const innerTestConfig = {
-    greeting: { value: { string: "Hi" } },
-    secretFeature: { value: { bool: false } },
+    greeting: { value: { type: "string", value: "Hi" } },
+    secretFeature: { value: { type: "bool", value: false } },
   };
 
   const promise = stubConfig(innerTestConfig);

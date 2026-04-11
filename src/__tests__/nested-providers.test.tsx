@@ -1,9 +1,9 @@
 import React from "react";
 import "@testing-library/jest-dom/extend-expect";
 import { render, screen } from "@testing-library/react";
-import { Context as ReforgeContext, Contexts } from "@reforge-com/javascript";
+import { encodeContexts, Contexts } from "@quonfig/javascript";
 import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
-import { reforge as globalQuonfig, QuonfigProvider, useQuonfig, SharedSettings } from "../index";
+import { quonfig as globalQuonfig, QuonfigProvider, useQuonfig, SharedSettings } from "../index";
 
 enableFetchMocks();
 
@@ -117,19 +117,19 @@ it("allows nested `QuonfigProvider`s that reuse the parent provider's settings",
 
   const outerUserFetchData = {
     evaluations: {
-      greeting: { value: { string: "Greetings, Doctor" } },
-      secretFeature: { value: { bool: true } },
+      greeting: { value: { type: "string", value: "Greetings, Doctor" } },
+      secretFeature: { value: { type: "bool", value: true } },
     },
   };
   const innerUserFetchData = {
     evaluations: {
-      greeting: { value: { string: "Hi" } },
-      secretFeature: { value: { bool: false } },
+      greeting: { value: { type: "string", value: "Hi" } },
+      secretFeature: { value: { type: "bool", value: false } },
     },
   };
 
   fetchMock.mockResponse((req) => {
-    if (req.url.includes(new ReforgeContext(outerUserContext).encode())) {
+    if (req.url.includes(encodeContexts(outerUserContext))) {
       return Promise.resolve({
         body: JSON.stringify(outerUserFetchData),
         status: 200,
@@ -192,19 +192,19 @@ it("allows nested `QuonfigProvider`s that use new settings", async () => {
 
   const outerUserFetchData = {
     evaluations: {
-      greeting: { value: { string: "Greetings, Doctor" } },
-      secretFeature: { value: { bool: true } },
+      greeting: { value: { type: "string", value: "Greetings, Doctor" } },
+      secretFeature: { value: { type: "bool", value: true } },
     },
   };
   const innerUserFetchData = {
     evaluations: {
-      greeting: { value: { string: "Hi" } },
-      secretFeature: { value: { bool: false } },
+      greeting: { value: { type: "string", value: "Hi" } },
+      secretFeature: { value: { type: "bool", value: false } },
     },
   };
 
   fetchMock.mockResponse((req) => {
-    if (req.url.includes(new ReforgeContext(outerUserContext).encode())) {
+    if (req.url.includes(encodeContexts(outerUserContext))) {
       return Promise.resolve({
         body: JSON.stringify(outerUserFetchData),
         status: 200,

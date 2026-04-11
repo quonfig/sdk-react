@@ -1,12 +1,12 @@
 import React from "react";
-import { Reforge } from "@reforge-com/javascript";
+import { Quonfig } from "@quonfig/javascript";
 import { createQuonfigHook } from "../index";
 
 // Simple TypesafeClass for testing
 export class AppConfig {
-  private quonfig: Reforge;
+  private quonfig: Quonfig;
 
-  constructor(quonfig: Reforge) {
+  constructor(quonfig: Quonfig) {
     this.quonfig = quonfig;
   }
 

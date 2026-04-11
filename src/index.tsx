@@ -1,4 +1,4 @@
-import { reforge, type Contexts } from "@reforge-com/javascript";
+import { quonfig, type Contexts } from "@quonfig/javascript";
 import {
   QuonfigProvider,
   useQuonfig,
@@ -21,7 +21,7 @@ export {
   QuonfigProviderProps,
   ConfigValue,
   Contexts,
-  reforge,
+  quonfig,
   SharedSettings,
   QuonfigTypesafeClass,
   ProvidedContext,
