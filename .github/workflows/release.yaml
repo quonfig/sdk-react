@@ -44,8 +44,20 @@ jobs:
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
-      - run: npm ci
-      - run: npm run build
+      - name: Enable corepack (yarn 4)
+        run: corepack enable
+      - name: Replace local file dep with npm version for CI
+        run: |
+          node -e "
+            const fs = require('fs');
+            const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            if (p.devDependencies['@quonfig/javascript'] && p.devDependencies['@quonfig/javascript'].startsWith('file:')) {
+              p.devDependencies['@quonfig/javascript'] = p.peerDependencies['@quonfig/javascript'] || '>=0.0.2';
+            }
+            fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
+          "
+      - run: yarn install --no-immutable
+      - run: yarn build
       - name: Get npm publish token via OIDC
         id: npm-token
         run: |
