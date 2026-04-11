@@ -73,7 +73,7 @@
     "typescript": "^4.7.4"
   },
   "peerDependencies": {
-    "@quonfig/javascript": ">=0.0.2",
+    "@quonfig/javascript": ">=0.0.3",
     "react": "^16 || ^17 || ^18 || ^19"
   }
 }
