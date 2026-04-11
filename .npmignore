@@ -1,0 +1,46 @@
+# Source code
+src/
+tests/
+
+# Test files and helpers
+**/__tests__/
+**/*.test.*
+**/*.spec.*
+**/test-*.*
+**/test/
+
+# Development/build files
+scripts/
+tsconfig.json
+tsup.config.ts
+jest.config.js
+.eslintrc.js
+.prettierrc
+.prettierignore
+.github/
+.vscode/
+.tool-versions
+CODEOWNERS
+CONTRIBUTING.md
+
+# CI/Release related
+publish-*.sh
+.travis.yml
+.gitlab-ci.yml
+.github/
+.circleci/
+
+# Misc
+node_modules/
+coverage/
+.DS_Store
+.env
+.env.*
+*.log
+.git/
+.gitignore
+
+# Keep README, LICENSE, and CHANGELOG
+!README.md
+!LICENSE
+!CHANGELOG.md

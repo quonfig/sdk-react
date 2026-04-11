@@ -1,0 +1,7 @@
+index.js
+node_modules/
+types/
+dist/
+coverage/
+*.tgz
+.envrc
