@@ -1,10 +1,10 @@
-# @reforge-com/react
+# @quonfig/react
 
-A React provider and hook for [Reforge]
+A React provider and hook for [Quonfig](https://quonfig.com)
 
 ## Installation
 
-`npm install @reforge-com/react` or `yarn add @reforge-com/react`
+`npm install @quonfig/react` or `yarn add @quonfig/react`
 
 TypeScript types are included with the package.
 
@@ -12,10 +12,10 @@ TypeScript types are included with the package.
 
 ### Configure the Provider
 
-Wrap your component tree in the `ReforgeProvider`, e.g.
+Wrap your component tree in the `QuonfigProvider`, e.g.
 
 ```javascript
-import { ReforgeProvider } from "@reforge-com/react";
+import { QuonfigProvider } from "@quonfig/react";
 
 const WrappedApp = () => {
   const context = {
@@ -28,31 +28,30 @@ const WrappedApp = () => {
   };
 
   return (
-    <ReforgeProvider sdkKey={"YOUR_SDK_KEY"} contextAttributes={context} onError={onError}>
+    <QuonfigProvider sdkKey={"YOUR_SDK_KEY"} contextAttributes={context} onError={onError}>
       <App />
-    </ReforgeProvider>
+    </QuonfigProvider>
   );
 };
 ```
 
 Here's an explanation of each provider prop:
 
-| property            | required | type              | purpose                                                                       |
-| ------------------- | -------- | ----------------- | ----------------------------------------------------------------------------- |
-| `sdkKey`            | yes      | `string`          | your Reforge SDK key                                                          |
-| `onError`           | no       | `(error) => void` | callback invoked if reforge fails to initialize                               |
-| `contextAttributes` | no       | `Contexts`        | this is the context attributes object you passed when setting up the provider |
-| `endpoints`         | no       | `string[]`        | CDN endpoints to load configuration from (defaults to 2 reforge-based CDNs)   |
-| `timeout`           | no       | `number`          | initialization timeout (defaults to 10 seconds)                               |
-| `pollInterval`      | no       | `number`          | configures reforge to poll for updates every `pollInterval` ms.               |
+| property            | required | type              | purpose                                                                        |
+| ------------------- | -------- | ----------------- | ------------------------------------------------------------------------------ |
+| `sdkKey`            | yes      | `string`          | your Quonfig SDK key                                                           |
+| `onError`           | no       | `(error) => void` | callback invoked if quonfig fails to initialize                                |
+| `contextAttributes` | no       | `Contexts`        | this is the context attributes object you passed when setting up the provider  |
+| `timeout`           | no       | `number`          | initialization timeout (defaults to 10 seconds)                                |
+| `pollInterval`      | no       | `number`          | configures quonfig to poll for updates every `pollInterval` ms.                |
 
 ### Usage in Your Components
 
-Use the `useReforge` hook to fetch flags and config values:
+Use the `useQuonfig` hook to fetch flags and config values:
 
 ```javascript
 const Logo = () => {
-  const { isEnabled } = useReforge();
+  const { isEnabled } = useQuonfig();
 
   if (isEnabled("new-logo")) {
     return <img src={newLogo} className="App-logo" alt="logo" />;
@@ -62,10 +61,10 @@ const Logo = () => {
 };
 ```
 
-`useReforge` exposes the following:
+`useQuonfig` exposes the following:
 
 ```javascript
-const { isEnabled, get, loading, contextAttributes } = useReforge();
+const { isEnabled, get, loading, contextAttributes } = useQuonfig();
 ```
 
 Here's an explanation of each property:
@@ -74,21 +73,21 @@ Here's an explanation of each property:
 | ------------------- | ----------------------- | ---------------------------------------------------------------------------------------- |
 | `isEnabled`         | `isEnabled("new-logo")` | returns a boolean (default `false`) if a feature is enabled based on the current context |
 | `get`               | `get('retry-count')`    | returns the value of a flag or config                                                    |
-| `loading`           | `if (loading) { ... }`  | a boolean indicating whether reforge content is being loaded                             |
+| `loading`           | `if (loading) { ... }`  | a boolean indicating whether quonfig content is being loaded                             |
 | `contextAttributes` | N/A                     | this is the context attributes object you passed when setting up the provider            |
-| `reforge`           | N/A                     | the underlying JavaScript reforge instance                                               |
+| `quonfig`           | N/A                     | the underlying JavaScript quonfig instance                                               |
 | `keys`              | N/A                     | an array of all the flag and config names in the current configuration                   |
 
 ## Usage in your test suite
 
-Wrap the component under test in a `ReforgeTestProvider` and provide a config object to set up your
+Wrap the component under test in a `QuonfigTestProvider` and provide a config object to set up your
 test state.
 
 e.g. if you wanted to test the following trivial component
 
 ```javascript
 function MyComponent() {
-  const { get, isEnabled, loading } = useReforge();
+  const { get, isEnabled, loading } = useQuonfig();
   const greeting = get("greeting") || "Greetings";
 
   if (loading) {
@@ -111,13 +110,13 @@ function MyComponent() {
 You could do the following in [jest]/[rtl]
 
 ```javascript
-import { ReforgeTestProvider } from '@reforge-com/react';
+import { QuonfigTestProvider } from '@quonfig/react';
 
 const renderInTestProvider = (config: {[key: string]: any}) => {
   render(
-    <ReforgeTestProvider config={config}>
+    <QuonfigTestProvider config={config}>
       <MyComponent />
-    </ReforgeTestProvider>,
+    </QuonfigTestProvider>,
   );
 };
 
@@ -144,4 +143,4 @@ guidelines, please see [CONTRIBUTING.md](CONTRIBUTING.md)
 
 [jest]: https://jestjs.io/
 [rtl]: https://testing-library.com/docs/react-testing-library/intro/
-[Prefab]: https://www.prefab.cloud/
+[Quonfig]: https://quonfig.com

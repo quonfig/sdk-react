@@ -2,7 +2,7 @@ Changelog
 
 ## 0.0.2 - 2025-10-12
 
-- Support re-hydration of flags via ReforgeProvider
+- Support re-hydration of flags via QuonfigProvider
 
 ## 0.0.1 - 2025-10-01
 
@@ -22,12 +22,12 @@ Changelog
 
 ## 0.0.0-pre.9 - 2025-09-26
 
-- fix: Hook up `createReforgeHook` to actually use the typesafe class instance and provide access to
+- fix: Hook up `createQuonfigHook` to actually use the typesafe class instance and provide access to
   it's getter methods
 
 ## 0.0.0-pre.8 - 2025-09-24
 
-- feat: Upgrade sdk-javascript dependency to use new reforge.com endpoints
+- feat: Upgrade sdk-javascript dependency to use new quonfig.com endpoints
 
 ## 0.0.0-pre.6 - 2025-09-23
 
@@ -55,7 +55,7 @@ Changelog
 
 ## 0.0.0-pre.0 - 2025-08-04
 
-- chore: Reforge rebrand
+- chore: Quonfig rebrand
 
 # @prefab-cloud/prefab-cloud-react
 
@@ -110,11 +110,11 @@ All releases below were released as part of the
 
 ## @prefab-cloud/prefab-cloud-react 0.3.2 - 2024-06-20
 
-- Allow nesting a ReforgeProvider in a ReforgeTestProvider (#48)
+- Allow nesting a QuonfigProvider in a ReforgeTestProvider (#48)
 
 ## @prefab-cloud/prefab-cloud-react 0.3.1 - 2024-06-13
 
-- Support for nested ReforgeProviders
+- Support for nested QuonfigProviders
 
 ## @prefab-cloud/prefab-cloud-react 0.3.0 - 2024-06-04
 
@@ -194,7 +194,7 @@ All releases below were released as part of the
 
 - Update eslint and resolve all existing errors/warnings
 - Add and configure prettier
-- Add support for passing a pollInterval to the `ReforgeProvider`
+- Add support for passing a pollInterval to the `QuonfigProvider`
 
 ## @prefab-cloud/prefab-cloud-react [0.1.11] - 2023-07-06
 

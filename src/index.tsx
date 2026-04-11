@@ -1,31 +1,31 @@
 import { reforge, type Contexts } from "@reforge-com/javascript";
 import {
-  ReforgeProvider,
-  useReforge,
+  QuonfigProvider,
+  useQuonfig,
   ConfigValue,
   SharedSettings,
-  ReforgeProviderProps,
+  QuonfigProviderProps,
   ProvidedContext,
-  ReforgeTypesafeClass,
-  createReforgeHook,
+  QuonfigTypesafeClass,
+  createQuonfigHook,
   FrontEndConfigurationAccessor,
   TypedFrontEndConfigurationAccessor,
-} from "./ReforgeProvider";
-import { ReforgeTestProvider, ReforgeTestProviderProps } from "./ReforgeTestProvider";
+} from "./QuonfigProvider";
+import { QuonfigTestProvider, QuonfigTestProviderProps } from "./QuonfigTestProvider";
 
 export {
-  ReforgeProvider,
-  ReforgeTestProvider,
-  useReforge,
-  ReforgeTestProviderProps,
-  ReforgeProviderProps,
+  QuonfigProvider,
+  QuonfigTestProvider,
+  useQuonfig,
+  QuonfigTestProviderProps,
+  QuonfigProviderProps,
   ConfigValue,
   Contexts,
   reforge,
   SharedSettings,
-  ReforgeTypesafeClass,
+  QuonfigTypesafeClass,
   ProvidedContext,
   FrontEndConfigurationAccessor,
   TypedFrontEndConfigurationAccessor,
-  createReforgeHook,
+  createQuonfigHook,
 };

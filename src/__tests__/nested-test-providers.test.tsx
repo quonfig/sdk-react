@@ -2,14 +2,14 @@ import React, { act } from "react";
 import "@testing-library/jest-dom/extend-expect";
 import { render, screen } from "@testing-library/react";
 import {
-  reforge as globalReforge,
-  ReforgeProvider,
-  useReforge,
-  ReforgeTestProvider,
-  ReforgeTestProviderProps,
+  reforge as globalQuonfig,
+  QuonfigProvider,
+  useQuonfig,
+  QuonfigTestProvider,
+  QuonfigTestProviderProps,
 } from "../index";
 
-type Provider = typeof ReforgeTestProvider | typeof ReforgeProvider;
+type Provider = typeof QuonfigTestProvider | typeof QuonfigProvider;
 
 type Config = { [key: string]: any };
 
@@ -27,15 +27,15 @@ const stubConfig = (config: Config) =>
   });
 
 function InnerUserComponent() {
-  const { isEnabled, loading, reforge } = useReforge();
+  const { isEnabled, loading, quonfig } = useQuonfig();
 
   if (loading) {
     return <div>Loading inner component...</div>;
   }
 
   return (
-    <div data-testid="inner-wrapper" data-reforge-instance-hash={reforge.instanceHash}>
-      <h1 data-testid="inner-greeting">{reforge.get("greeting")?.toString() ?? "Default"}</h1>
+    <div data-testid="inner-wrapper" data-quonfig-instance-hash={quonfig.instanceHash}>
+      <h1 data-testid="inner-greeting">{quonfig.get("greeting")?.toString() ?? "Default"}</h1>
       {isEnabled("secretFeature") && (
         <button data-testid="inner-secret-feature" type="submit" title="secret-feature">
           Secret feature
@@ -51,17 +51,17 @@ function OuterUserComponent({
   InnerProvider,
 }: {
   admin: { name: string };
-  innerTestConfig: ReforgeTestProviderProps["config"];
+  innerTestConfig: QuonfigTestProviderProps["config"];
   InnerProvider: Provider;
 }) {
-  const { get, isEnabled, loading, reforge, settings } = useReforge();
+  const { get, isEnabled, loading, quonfig, settings } = useQuonfig();
 
   if (loading) {
     return <div>Loading outer component...</div>;
   }
 
   return (
-    <div data-testid="outer-wrapper" data-reforge-instance-hash={reforge.instanceHash}>
+    <div data-testid="outer-wrapper" data-quonfig-instance-hash={quonfig.instanceHash}>
       <h1 data-testid="outer-greeting">{(get("greeting") as string) ?? "Default"}</h1>
       {isEnabled("secretFeature") && (
         <button data-testid="outer-secret-feature" type="submit" title="secret-feature">
@@ -90,22 +90,22 @@ function App({
   outerTestConfig,
   InnerProvider,
 }: {
-  innerTestConfig: ReforgeTestProviderProps["config"];
-  outerTestConfig: ReforgeTestProviderProps["config"];
+  innerTestConfig: QuonfigTestProviderProps["config"];
+  outerTestConfig: QuonfigTestProviderProps["config"];
   InnerProvider: Provider;
 }) {
   return (
-    <ReforgeTestProvider config={outerTestConfig}>
+    <QuonfigTestProvider config={outerTestConfig}>
       <OuterUserComponent
         admin={{ name: "John Doe" }}
         innerTestConfig={innerTestConfig}
         InnerProvider={InnerProvider}
       />
-    </ReforgeTestProvider>
+    </QuonfigTestProvider>
   );
 }
 
-it("allows nested test `ReforgeTestProvider`s", async () => {
+it("allows nested test `QuonfigTestProvider`s", async () => {
   const outerUserContext = {
     user: { email: "dr.smith@example.com", doctor: true },
     outerOnly: { city: "NYC" },
@@ -128,7 +128,7 @@ it("allows nested test `ReforgeTestProvider`s", async () => {
     <App
       outerTestConfig={outerTestConfig}
       innerTestConfig={innerTestConfig}
-      InnerProvider={ReforgeTestProvider}
+      InnerProvider={QuonfigTestProvider}
     />
   );
 
@@ -141,18 +141,18 @@ it("allows nested test `ReforgeTestProvider`s", async () => {
   expect(screen.queryByTestId("outer-secret-feature")).toBeInTheDocument();
   expect(screen.queryByTestId("inner-secret-feature")).not.toBeInTheDocument();
 
-  // Verify that each provider has its own copy of Reforge
-  const outerReforgeInstanceHash = screen
+  // Verify that each provider has its own copy of Quonfig
+  const outerQuonfigInstanceHash = screen
     .getByTestId("outer-wrapper")
-    .getAttribute("data-reforge-instance-hash");
-  const innerReforgeInstanceHash = screen
+    .getAttribute("data-quonfig-instance-hash");
+  const innerQuonfigInstanceHash = screen
     .getByTestId("inner-wrapper")
-    .getAttribute("data-reforge-instance-hash");
+    .getAttribute("data-quonfig-instance-hash");
 
-  expect(outerReforgeInstanceHash).toHaveLength(36);
-  expect(innerReforgeInstanceHash).toHaveLength(36);
-  expect(outerReforgeInstanceHash).not.toEqual(innerReforgeInstanceHash);
-  expect(outerReforgeInstanceHash).toEqual(globalReforge.instanceHash);
+  expect(outerQuonfigInstanceHash).toHaveLength(36);
+  expect(innerQuonfigInstanceHash).toHaveLength(36);
+  expect(outerQuonfigInstanceHash).not.toEqual(innerQuonfigInstanceHash);
+  expect(outerQuonfigInstanceHash).toEqual(globalQuonfig.instanceHash);
 });
 
 it("can nest a real provider within a test provider", async () => {
@@ -175,7 +175,7 @@ it("can nest a real provider within a test provider", async () => {
   const promise = stubConfig(innerTestConfig);
 
   render(
-    <App outerTestConfig={outerTestConfig} innerTestConfig={{}} InnerProvider={ReforgeProvider} />
+    <App outerTestConfig={outerTestConfig} innerTestConfig={{}} InnerProvider={QuonfigProvider} />
   );
 
   await act(async () => {
@@ -191,15 +191,15 @@ it("can nest a real provider within a test provider", async () => {
   expect(screen.queryByTestId("outer-secret-feature")).toBeInTheDocument();
   expect(screen.queryByTestId("inner-secret-feature")).not.toBeInTheDocument();
 
-  // Verify that each provider has its own copy of Reforge
-  const outerReforgeInstanceHash = screen
+  // Verify that each provider has its own copy of Quonfig
+  const outerQuonfigInstanceHash = screen
     .getByTestId("outer-wrapper")
-    .getAttribute("data-reforge-instance-hash");
-  const innerReforgeInstanceHash = screen
+    .getAttribute("data-quonfig-instance-hash");
+  const innerQuonfigInstanceHash = screen
     .getByTestId("inner-wrapper")
-    .getAttribute("data-reforge-instance-hash");
+    .getAttribute("data-quonfig-instance-hash");
 
-  expect(outerReforgeInstanceHash).toHaveLength(36);
-  expect(innerReforgeInstanceHash).toHaveLength(36);
-  expect(outerReforgeInstanceHash).not.toEqual(innerReforgeInstanceHash);
+  expect(outerQuonfigInstanceHash).toHaveLength(36);
+  expect(innerQuonfigInstanceHash).toHaveLength(36);
+  expect(outerQuonfigInstanceHash).not.toEqual(innerQuonfigInstanceHash);
 });

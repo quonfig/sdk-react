@@ -3,7 +3,7 @@ import "@testing-library/jest-dom/extend-expect";
 import { render, screen } from "@testing-library/react";
 import { Context as ReforgeContext, Contexts } from "@reforge-com/javascript";
 import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
-import { reforge as globalReforge, ReforgeProvider, useReforge, SharedSettings } from "../index";
+import { reforge as globalQuonfig, QuonfigProvider, useQuonfig, SharedSettings } from "../index";
 
 enableFetchMocks();
 
@@ -12,7 +12,7 @@ const onError = console.error;
 const sdkKey = "nested-providers-test-sdk-key";
 
 function InnerUserComponent() {
-  const { isEnabled, loading, reforge, settings } = useReforge();
+  const { isEnabled, loading, quonfig, settings } = useQuonfig();
 
   if (loading) {
     return <div>Loading inner component...</div>;
@@ -21,10 +21,10 @@ function InnerUserComponent() {
   return (
     <div
       data-testid="inner-wrapper"
-      data-reforge-instance-hash={reforge.instanceHash}
-      data-reforge-settings={JSON.stringify(settings)}
+      data-quonfig-instance-hash={quonfig.instanceHash}
+      data-quonfig-settings={JSON.stringify(settings)}
     >
-      <h1 data-testid="inner-greeting">{reforge.get("greeting")?.toString() ?? "Default"}</h1>
+      <h1 data-testid="inner-greeting">{quonfig.get("greeting")?.toString() ?? "Default"}</h1>
       {isEnabled("secretFeature") && (
         <button data-testid="inner-secret-feature" type="submit" title="secret-feature">
           Secret feature
@@ -43,7 +43,7 @@ function OuterUserComponent({
   innerUserContext: Contexts;
   innerProviderSettings: SharedSettings;
 }) {
-  const { get, isEnabled, loading, reforge, settings: parentProviderSettings } = useReforge();
+  const { get, isEnabled, loading, quonfig, settings: parentProviderSettings } = useQuonfig();
 
   let innerSettings = innerProviderSettings;
   if (Object.keys(innerProviderSettings).length === 0) {
@@ -58,8 +58,8 @@ function OuterUserComponent({
   return (
     <div
       data-testid="outer-wrapper"
-      data-reforge-instance-hash={reforge.instanceHash}
-      data-reforge-settings={JSON.stringify(parentProviderSettings)}
+      data-quonfig-instance-hash={quonfig.instanceHash}
+      data-quonfig-settings={JSON.stringify(parentProviderSettings)}
     >
       <h1 data-testid="outer-greeting">{(get("greeting") as string) ?? "Default"}</h1>
       {isEnabled("secretFeature") && (
@@ -71,13 +71,13 @@ function OuterUserComponent({
       <div>
         <h1>You are looking at {admin.name}</h1>
         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-        <ReforgeProvider
+        <QuonfigProvider
           {...innerSettings}
           contextAttributes={innerUserContext}
           sdkKey={innerSettings.sdkKey!}
         >
           <InnerUserComponent />
-        </ReforgeProvider>
+        </QuonfigProvider>
       </div>
     </div>
   );
@@ -92,7 +92,7 @@ function App({
   innerProviderSettings?: SharedSettings;
 }) {
   return (
-    <ReforgeProvider
+    <QuonfigProvider
       sdkKey={sdkKey}
       contextAttributes={outerUserContext}
       onError={onError}
@@ -104,11 +104,11 @@ function App({
         innerUserContext={innerUserContext}
         innerProviderSettings={innerProviderSettings || {}}
       />
-    </ReforgeProvider>
+    </QuonfigProvider>
   );
 }
 
-it("allows nested `ReforgeProvider`s that reuse the parent provider's settings", async () => {
+it("allows nested `QuonfigProvider`s that reuse the parent provider's settings", async () => {
   const outerUserContext = {
     user: { email: "dr.smith@example.com", doctor: true },
     outerOnly: { city: "NYC" },
@@ -153,19 +153,19 @@ it("allows nested `ReforgeProvider`s that reuse the parent provider's settings",
   expect(screen.queryByTestId("outer-secret-feature")).toBeInTheDocument();
   expect(screen.queryByTestId("inner-secret-feature")).not.toBeInTheDocument();
 
-  // Verify that each provider has its own copy of Reforge
-  const outerReforgeWrapper = screen.getByTestId("outer-wrapper");
-  const innerReforgeWrapper = screen.getByTestId("inner-wrapper");
+  // Verify that each provider has its own copy of Quonfig
+  const outerQuonfigWrapper = screen.getByTestId("outer-wrapper");
+  const innerQuonfigWrapper = screen.getByTestId("inner-wrapper");
 
-  const outerReforgeInstanceHash = outerReforgeWrapper.getAttribute("data-reforge-instance-hash");
-  const innerReforgeInstanceHash = innerReforgeWrapper.getAttribute("data-reforge-instance-hash");
+  const outerQuonfigInstanceHash = outerQuonfigWrapper.getAttribute("data-quonfig-instance-hash");
+  const innerQuonfigInstanceHash = innerQuonfigWrapper.getAttribute("data-quonfig-instance-hash");
 
-  expect(outerReforgeInstanceHash).toHaveLength(36);
-  expect(innerReforgeInstanceHash).toHaveLength(36);
-  expect(outerReforgeInstanceHash).not.toEqual(innerReforgeInstanceHash);
-  expect(outerReforgeInstanceHash).toEqual(globalReforge.instanceHash);
+  expect(outerQuonfigInstanceHash).toHaveLength(36);
+  expect(innerQuonfigInstanceHash).toHaveLength(36);
+  expect(outerQuonfigInstanceHash).not.toEqual(innerQuonfigInstanceHash);
+  expect(outerQuonfigInstanceHash).toEqual(globalQuonfig.instanceHash);
 
-  expect(outerReforgeWrapper.getAttribute("data-reforge-settings")).toStrictEqual(
+  expect(outerQuonfigWrapper.getAttribute("data-quonfig-settings")).toStrictEqual(
     JSON.stringify({
       sdkKey,
       collectEvaluationSummaries: false,
@@ -174,7 +174,7 @@ it("allows nested `ReforgeProvider`s that reuse the parent provider's settings",
   );
 
   // These are all inherited
-  expect(innerReforgeWrapper.getAttribute("data-reforge-settings")).toStrictEqual(
+  expect(innerQuonfigWrapper.getAttribute("data-quonfig-settings")).toStrictEqual(
     JSON.stringify({
       sdkKey,
       collectEvaluationSummaries: false,
@@ -183,7 +183,7 @@ it("allows nested `ReforgeProvider`s that reuse the parent provider's settings",
   );
 });
 
-it("allows nested `ReforgeProvider`s that use new settings", async () => {
+it("allows nested `QuonfigProvider`s that use new settings", async () => {
   const outerUserContext = {
     user: { email: "dr.smith@example.com", doctor: true },
     outerOnly: { city: "NYC" },
@@ -239,11 +239,11 @@ it("allows nested `ReforgeProvider`s that use new settings", async () => {
   expect(screen.queryByTestId("outer-secret-feature")).toBeInTheDocument();
   expect(screen.queryByTestId("inner-secret-feature")).not.toBeInTheDocument();
 
-  // Verify that each provider has its own copy of Reforge
-  const outerReforgeWrapper = screen.getByTestId("outer-wrapper");
-  const innerReforgeWrapper = screen.getByTestId("inner-wrapper");
+  // Verify that each provider has its own copy of Quonfig
+  const outerQuonfigWrapper = screen.getByTestId("outer-wrapper");
+  const innerQuonfigWrapper = screen.getByTestId("inner-wrapper");
 
-  expect(outerReforgeWrapper.getAttribute("data-reforge-settings")).toStrictEqual(
+  expect(outerQuonfigWrapper.getAttribute("data-quonfig-settings")).toStrictEqual(
     JSON.stringify({
       sdkKey,
       collectEvaluationSummaries: false,
@@ -252,7 +252,7 @@ it("allows nested `ReforgeProvider`s that use new settings", async () => {
   );
 
   // These are NOT inherited so we get what we set on the inner provider
-  expect(innerReforgeWrapper.getAttribute("data-reforge-settings")).toStrictEqual(
+  expect(innerQuonfigWrapper.getAttribute("data-quonfig-settings")).toStrictEqual(
     JSON.stringify({
       sdkKey: "inner-sdk-key",
       collectLoggerNames: true,

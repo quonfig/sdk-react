@@ -1,26 +1,26 @@
 import React, { PropsWithChildren } from "react";
-import { ReforgeContext, assignReforgeClient, ProvidedContext } from "./ReforgeProvider";
+import { QuonfigContext, assignQuonfigClient, ProvidedContext } from "./QuonfigProvider";
 
-export type ReforgeTestProviderProps = {
+export type QuonfigTestProviderProps = {
   config: Record<string, any>;
   sdkKey?: string;
 };
 
-function ReforgeTestProvider({
+function QuonfigTestProvider({
   sdkKey,
   config,
   children,
-}: PropsWithChildren<ReforgeTestProviderProps>) {
+}: PropsWithChildren<QuonfigTestProviderProps>) {
   const get = (key: string) => config[key];
   const getDuration = (key: string) => config[key];
   const isEnabled = (key: string) => !!get(key);
 
-  const reforgeClient = React.useMemo(() => assignReforgeClient(), []);
+  const quonfigClient = React.useMemo(() => assignQuonfigClient(), []);
 
   const value = React.useMemo(() => {
-    reforgeClient.get = get;
-    reforgeClient.getDuration = getDuration;
-    reforgeClient.isEnabled = isEnabled;
+    quonfigClient.get = get;
+    quonfigClient.getDuration = getDuration;
+    quonfigClient.isEnabled = isEnabled;
 
     const baseContext: ProvidedContext = {
       isEnabled,
@@ -28,15 +28,15 @@ function ReforgeTestProvider({
       get,
       getDuration,
       loading: false,
-      reforge: reforgeClient,
+      quonfig: quonfigClient,
       keys: Object.keys(config),
       settings: { sdkKey: sdkKey ?? "fake-sdk-key-via-the-test-provider" },
     };
 
     return baseContext;
-  }, [config, reforgeClient, sdkKey]);
+  }, [config, quonfigClient, sdkKey]);
 
-  return <ReforgeContext.Provider value={value}>{children}</ReforgeContext.Provider>;
+  return <QuonfigContext.Provider value={value}>{children}</QuonfigContext.Provider>;
 }
 
-export { ReforgeTestProvider };
+export { QuonfigTestProvider };

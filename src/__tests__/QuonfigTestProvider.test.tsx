@@ -3,10 +3,10 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import { Reforge } from "@reforge-com/javascript";
-import { ReforgeTestProvider, useReforge, createReforgeHook } from "../index";
+import { QuonfigTestProvider, useQuonfig, createQuonfigHook } from "../index";
 
 function MyComponent() {
-  const { get, isEnabled, loading, keys } = useReforge();
+  const { get, isEnabled, loading, keys } = useQuonfig();
   const greeting = get("greeting") || "Default";
   // @ts-expect-error This is OK in a test
   const subtitle = get("subtitle")?.actualSubtitle || "Default Subtitle";
@@ -30,12 +30,12 @@ function MyComponent() {
   );
 }
 
-describe("ReforgeTestProvider", () => {
+describe("QuonfigTestProvider", () => {
   const renderInTestProvider = (config: Record<string, any>) => {
     render(
-      <ReforgeTestProvider config={config}>
+      <QuonfigTestProvider config={config}>
         <MyComponent />
-      </ReforgeTestProvider>
+      </QuonfigTestProvider>
     );
   };
 
@@ -83,36 +83,36 @@ describe("ReforgeTestProvider", () => {
   });
 });
 
-// Adding explicit tests for createReforgeHook functionality
-describe("createReforgeHook functionality with ReforgeTestProvider", () => {
+// Adding explicit tests for createQuonfigHook functionality
+describe("createQuonfigHook functionality with QuonfigTestProvider", () => {
   // Custom TypesafeClass for testing
   class CustomFeatureFlags {
-    constructor(public reforge: Reforge) {
+    constructor(public quonfig: Reforge) {
       this.calculateCustomValue = this.calculateCustomValue.bind(this);
     }
 
     get(key: string): unknown {
-      return this.reforge.get(key);
+      return this.quonfig.get(key);
     }
 
     get isCustomFeatureEnabled(): boolean {
-      return this.reforge.isEnabled("custom.feature");
+      return this.quonfig.isEnabled("custom.feature");
     }
 
     get getCustomMessage(): string {
-      const message = this.reforge.get("custom.message");
+      const message = this.quonfig.get("custom.message");
       return typeof message === "string" ? message : "Default Message";
     }
 
     calculateCustomValue(multiplier: number): number {
-      const baseValue = this.reforge.get("custom.base.value");
+      const baseValue = this.quonfig.get("custom.base.value");
       const base = typeof baseValue === "number" ? baseValue : 5;
       return base * multiplier;
     }
   }
 
   // Create a typed hook using our TypesafeClass
-  const useCustomFeatureFlags = createReforgeHook(CustomFeatureFlags);
+  const useCustomFeatureFlags = createQuonfigHook(CustomFeatureFlags);
 
   // Component that uses the custom typed hook
   function CustomHookComponent() {
@@ -128,9 +128,9 @@ describe("createReforgeHook functionality with ReforgeTestProvider", () => {
     );
   }
 
-  it("creates a working custom hook with createReforgeHook", () => {
+  it("creates a working custom hook with createQuonfigHook", () => {
     render(
-      <ReforgeTestProvider
+      <QuonfigTestProvider
         config={{
           "custom.message": "Hello from Test Custom Hook",
           "custom.feature": true,
@@ -138,7 +138,7 @@ describe("createReforgeHook functionality with ReforgeTestProvider", () => {
         }}
       >
         <CustomHookComponent />
-      </ReforgeTestProvider>
+      </QuonfigTestProvider>
     );
 
     expect(screen.getByTestId("custom-message")).toHaveTextContent("Hello from Test Custom Hook");
@@ -148,14 +148,14 @@ describe("createReforgeHook functionality with ReforgeTestProvider", () => {
 
   it("provides default values when configs are not provided", () => {
     render(
-      <ReforgeTestProvider
+      <QuonfigTestProvider
         config={{
           // Only specify some values
           "custom.message": "Only Message Set",
         }}
       >
         <CustomHookComponent />
-      </ReforgeTestProvider>
+      </QuonfigTestProvider>
     );
 
     expect(screen.getByTestId("custom-message")).toHaveTextContent("Only Message Set");
@@ -169,13 +169,13 @@ describe("createReforgeHook functionality with ReforgeTestProvider", () => {
     const methodSpy = jest.fn().mockReturnValue("memoized result");
 
     class SpiedClass {
-      constructor(public reforge: Reforge) {
-        constructorSpy(reforge);
+      constructor(public quonfig: Reforge) {
+        constructorSpy(quonfig);
         this.testMethod = this.testMethod.bind(this);
       }
 
       get(key: string): unknown {
-        return this.reforge.get(key);
+        return this.quonfig.get(key);
       }
 
       // eslint-disable-next-line class-methods-use-this
@@ -184,7 +184,7 @@ describe("createReforgeHook functionality with ReforgeTestProvider", () => {
       }
     }
 
-    const useSpiedHook = createReforgeHook(SpiedClass);
+    const useSpiedHook = createQuonfigHook(SpiedClass);
 
     // Component that forces re-renders
     function ReRenderingComponent() {
@@ -209,9 +209,9 @@ describe("createReforgeHook functionality with ReforgeTestProvider", () => {
     }
 
     render(
-      <ReforgeTestProvider config={{}}>
+      <QuonfigTestProvider config={{}}>
         <ReRenderingComponent />
-      </ReforgeTestProvider>
+      </QuonfigTestProvider>
     );
 
     // Wait for all re-renders to complete

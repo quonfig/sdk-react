@@ -14,7 +14,7 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version } = require("../package.json");
 
-// @reforge-com/cli#generate will create interfaces into this namespace for React to consume
+// @quonfig/cli#generate will create interfaces into this namespace for React to consume
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface FrontEndConfigurationAccessor {}
 
@@ -26,9 +26,9 @@ export type TypedFrontEndConfigurationAccessor = keyof FrontEndConfigurationAcce
 
 type ClassMethods<T> = { [K in keyof T]: T[K] };
 
-type ReforgeTypesafeClass<T = unknown> = new (
+type QuonfigTypesafeClass<T = unknown> = new (
   // eslint-disable-next-line no-shadow
-  reforge: Reforge
+  quonfig: Reforge
 ) => T;
 
 type SharedSettings = Partial<
@@ -79,12 +79,12 @@ export type BaseContext = {
     key: K
   ) => boolean;
   loading: boolean;
-  reforge: typeof reforge;
+  quonfig: typeof reforge;
   keys: (keyof TypedFrontEndConfigurationRaw)[];
   settings: SharedSettings;
 };
 
-export type ProvidedContext = BaseContext & ClassMethods<ReforgeTypesafeClass>;
+export type ProvidedContext = BaseContext & ClassMethods<QuonfigTypesafeClass>;
 
 export const defaultContext: BaseContext = {
   get: (_key) => undefined,
@@ -93,24 +93,24 @@ export const defaultContext: BaseContext = {
   keys: [],
   loading: true,
   contextAttributes: {},
-  reforge,
+  quonfig: reforge,
   settings: {},
 };
 
-export const ReforgeContext = React.createContext<ProvidedContext>(
+export const QuonfigContext = React.createContext<ProvidedContext>(
   defaultContext as ProvidedContext
 );
 
-// This is a factory function that creates a fully typed useReforge hook for a specific ReforgeTypesafe class
-export function createReforgeHook<T>(TypesafeClass: ReforgeTypesafeClass<T>) {
-  return function useReforgeHook(): BaseContext & T {
-    const baseContext = React.useContext(ReforgeContext);
+// This is a factory function that creates a fully typed useQuonfig hook for a specific QuonfigTypesafe class
+export function createQuonfigHook<T>(TypesafeClass: QuonfigTypesafeClass<T>) {
+  return function useQuonfigHook(): BaseContext & T {
+    const baseContext = React.useContext(QuonfigContext);
 
     // Memoize the typesafe instance to prevent unnecessary constructor calls
     const typesafeInstance = React.useMemo(() => {
-      const instance = new TypesafeClass(baseContext.reforge);
+      const instance = new TypesafeClass(baseContext.quonfig);
 
-      // Copy baseContext properties to typesafeInstance except for `get` + `reforge`
+      // Copy baseContext properties to typesafeInstance except for `get` + `quonfig`
       Object.assign(instance as any, {
         getDuration: baseContext.getDuration,
         contextAttributes: baseContext.contextAttributes,
@@ -128,23 +128,23 @@ export function createReforgeHook<T>(TypesafeClass: ReforgeTypesafeClass<T>) {
 }
 
 // Basic hook for general use - requires type parameter
-export const useBaseReforge = () => React.useContext(ReforgeContext);
+export const useBaseQuonfig = () => React.useContext(QuonfigContext);
 
 // General hook that returns the context with any explicit type
-export const useReforge = (): ProvidedContext => useBaseReforge() as unknown as ProvidedContext;
+export const useQuonfig = (): ProvidedContext => useBaseQuonfig() as unknown as ProvidedContext;
 
-let globalReforgeIsTaken = false;
+let globalQuonfigIsTaken = false;
 
-export const assignReforgeClient = () => {
-  if (globalReforgeIsTaken) {
+export const assignQuonfigClient = () => {
+  if (globalQuonfigIsTaken) {
     return new Reforge();
   }
 
-  globalReforgeIsTaken = true;
+  globalQuonfigIsTaken = true;
   return reforge;
 };
 
-export type ReforgeProviderProps = SharedSettings & {
+export type QuonfigProviderProps = SharedSettings & {
   sdkKey: string;
   contextAttributes?: Contexts;
   initialFlags?: Record<string, unknown>;
@@ -158,7 +158,7 @@ const getContext = (
     if (Object.keys(contextAttributes).length === 0) {
       // eslint-disable-next-line no-console
       console.warn(
-        "ReforgeProvider: You haven't passed any contextAttributes. See https://docs.prefab.cloud/docs/sdks/react#using-context"
+        "QuonfigProvider: You haven't passed any contextAttributes. See https://docs.quonfig.com/docs/sdks/react#using-context"
       );
     }
 
@@ -172,7 +172,7 @@ const getContext = (
   }
 };
 
-function ReforgeProvider({
+function QuonfigProvider({
   sdkKey,
   contextAttributes = {},
   onError = (e: unknown) => {
@@ -189,7 +189,7 @@ function ReforgeProvider({
   collectEvaluationSummaries,
   collectLoggerNames,
   collectContextMode,
-}: PropsWithChildren<ReforgeProviderProps>) {
+}: PropsWithChildren<QuonfigProviderProps>) {
   const settings = {
     sdkKey,
     endpoints,
@@ -214,12 +214,12 @@ function ReforgeProvider({
   // changes
   const [loadedContextKey, setLoadedContextKey] = React.useState("");
 
-  const reforgeClient: Reforge = React.useMemo(() => assignReforgeClient(), []);
+  const quonfigClient: Reforge = React.useMemo(() => assignQuonfigClient(), []);
 
   const [context, contextKey] = getContext(contextAttributes, onError);
 
   if (initialFlags && initialLoad) {
-    reforgeClient.hydrate(initialFlags);
+    quonfigClient.hydrate(initialFlags);
     setInitialLoad(false);
     setLoadedContextKey(contextKey);
     setLoading(false);
@@ -244,24 +244,24 @@ function ReforgeProvider({
         mostRecentlyLoadingContextKey.current = contextKey;
 
         if (!sdkKey) {
-          throw new Error("ReforgeProvider: sdkKey is required");
+          throw new Error("QuonfigProvider: sdkKey is required");
         }
 
-        const initOptions: Parameters<typeof reforgeClient.init>[0] = {
+        const initOptions: Parameters<typeof quonfigClient.init>[0] = {
           context,
           ...settings,
           clientNameString: "sdk-react",
           clientVersionString: version,
         };
 
-        reforgeClient
+        quonfigClient
           .init(initOptions)
           .then(() => {
             setLoadedContextKey(contextKey);
             setLoading(false);
 
             if (pollInterval) {
-              reforgeClient.poll({ frequencyInMs: pollInterval });
+              quonfigClient.poll({ frequencyInMs: pollInterval });
             }
           })
           .catch((reason: any) => {
@@ -271,7 +271,7 @@ function ReforgeProvider({
       } else {
         mostRecentlyLoadingContextKey.current = contextKey;
 
-        reforgeClient
+        quonfigClient
           .updateContext(context)
           .then(() => {
             setLoadedContextKey(contextKey);
@@ -293,25 +293,25 @@ function ReforgeProvider({
     loading,
     setLoading,
     onError,
-    reforgeClient.instanceHash,
+    quonfigClient.instanceHash,
   ]);
 
   const value = React.useMemo(() => {
     const baseContext: ProvidedContext = {
-      isEnabled: reforgeClient.isEnabled.bind(reforgeClient),
+      isEnabled: quonfigClient.isEnabled.bind(quonfigClient),
       contextAttributes,
-      get: reforgeClient.get.bind(reforgeClient),
-      getDuration: reforgeClient.getDuration.bind(reforgeClient),
-      keys: Object.keys(reforgeClient.extract()),
-      reforge: reforgeClient,
+      get: quonfigClient.get.bind(quonfigClient),
+      getDuration: quonfigClient.getDuration.bind(quonfigClient),
+      keys: Object.keys(quonfigClient.extract()),
+      quonfig: quonfigClient,
       loading,
       settings,
     };
 
     return baseContext;
-  }, [loadedContextKey, loading, reforgeClient.instanceHash, settings]);
+  }, [loadedContextKey, loading, quonfigClient.instanceHash, settings]);
 
-  return <ReforgeContext.Provider value={value}>{children}</ReforgeContext.Provider>;
+  return <QuonfigContext.Provider value={value}>{children}</QuonfigContext.Provider>;
 }
 
-export { ReforgeProvider, ConfigValue, SharedSettings, ReforgeTypesafeClass };
+export { QuonfigProvider, ConfigValue, SharedSettings, QuonfigTypesafeClass };

@@ -1,43 +1,43 @@
 import React from "react";
 import { Reforge } from "@reforge-com/javascript";
-import { createReforgeHook } from "../index";
+import { createQuonfigHook } from "../index";
 
 // Simple TypesafeClass for testing
 export class AppConfig {
-  private reforge: Reforge;
+  private quonfig: Reforge;
 
-  constructor(reforge: Reforge) {
-    this.reforge = reforge;
+  constructor(quonfig: Reforge) {
+    this.quonfig = quonfig;
   }
 
   get myCoolFeature(): boolean {
-    return this.reforge.isEnabled("my.cool.feature");
+    return this.quonfig.isEnabled("my.cool.feature");
   }
 
   get appName(): string {
-    const name = this.reforge.get("app.name");
+    const name = this.quonfig.get("app.name");
     return typeof name === "string" ? name : "Default App";
   }
 
   get apiUrl(): string {
-    const url = this.reforge.get("api.url");
+    const url = this.quonfig.get("api.url");
     return typeof url === "string" ? url : "https://api.default.com";
   }
 
   get themeColor(): string {
-    const color = this.reforge.get("theme.color");
+    const color = this.quonfig.get("theme.color");
     return typeof color === "string" ? color : "#000000";
   }
 
   calculateTimeout(multiplier: number): number {
-    const baseValue = this.reforge.get("timeout.base");
+    const baseValue = this.quonfig.get("timeout.base");
     const base = typeof baseValue === "number" ? baseValue : 1000;
     return base * multiplier;
   }
 }
 
 // Create a typed hook for our test class
-export const useAppConfig = createReforgeHook(AppConfig);
+export const useAppConfig = createQuonfigHook(AppConfig);
 
 // Component using the custom typed hook
 export function HookComponent() {

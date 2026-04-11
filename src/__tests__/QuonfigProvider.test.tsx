@@ -3,12 +3,12 @@ import React, { act } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import { ContextValue, Reforge, Contexts } from "@reforge-com/javascript";
-import { ReforgeProvider, useReforge, createReforgeHook } from "../index";
+import { QuonfigProvider, useQuonfig, createQuonfigHook } from "../index";
 
 type Config = { [key: string]: any };
 
 function MyComponent() {
-  const { get, isEnabled, loading, keys } = useReforge();
+  const { get, isEnabled, loading, keys } = useQuonfig();
   const greeting = get("greeting") || "Default";
   // @ts-expect-error This is OK in a test
   const subtitle = get("subtitle")?.actualSubtitle || "Default Subtitle";
@@ -45,7 +45,7 @@ afterEach(() => {
   error.mockReset();
 });
 
-describe("ReforgeProvider", () => {
+describe("QuonfigProvider", () => {
   const defaultContextAttributes = { user: { email: "test@example.com" } };
 
   const renderInProvider = ({
@@ -58,14 +58,14 @@ describe("ReforgeProvider", () => {
     initialFlags?: Record<string, unknown>;
   }) =>
     render(
-      <ReforgeProvider
+      <QuonfigProvider
         sdkKey="sdk-key"
         contextAttributes={contextAttributes}
         onError={onError}
         initialFlags={initialFlags}
       >
         <MyComponent />
-      </ReforgeProvider>
+      </QuonfigProvider>
     );
 
   const stubConfig = (config: Config) =>
@@ -174,13 +174,13 @@ describe("ReforgeProvider", () => {
 
     act(() => {
       rendered.rerender(
-        <ReforgeProvider
+        <QuonfigProvider
           sdkKey="sdk-key"
           contextAttributes={{ user: { email: "test@example.com" } }}
           onError={() => {}}
         >
           <MyComponent />
-        </ReforgeProvider>
+        </QuonfigProvider>
       );
     });
 
@@ -207,9 +207,9 @@ describe("ReforgeProvider", () => {
       setContextAttributes = innerSetContextAttributes;
 
       return (
-        <ReforgeProvider sdkKey="sdk-key" contextAttributes={contextAttributes} onError={() => {}}>
+        <QuonfigProvider sdkKey="sdk-key" contextAttributes={contextAttributes} onError={() => {}}>
           <MyComponent />
-        </ReforgeProvider>
+        </QuonfigProvider>
       );
     }
 
@@ -251,14 +251,14 @@ describe("ReforgeProvider", () => {
     ) as jest.Mock;
 
     render(
-      <ReforgeProvider
+      <QuonfigProvider
         sdkKey="sdk-key"
         contextAttributes={context}
         onError={() => {}}
         initialFlags={{ greeting: "My seeded greeting", secretFeature: true }}
       >
         <MyComponent />
-      </ReforgeProvider>
+      </QuonfigProvider>
     );
 
     const alert = screen.queryByRole("alert");
@@ -277,14 +277,14 @@ describe("ReforgeProvider", () => {
     const promise = stubConfig({ greeting: { value: { string: "afterEvaluationCallback" } } });
 
     render(
-      <ReforgeProvider
+      <QuonfigProvider
         sdkKey="sdk-key"
         contextAttributes={context}
         afterEvaluationCallback={callback}
         onError={() => {}}
       >
         <MyComponent />
-      </ReforgeProvider>
+      </QuonfigProvider>
     );
 
     await act(async () => {
@@ -324,38 +324,38 @@ describe("ReforgeProvider", () => {
   });
 });
 
-// Adding explicit tests for createReforgeHook functionality
-describe("createReforgeHook functionality with ReforgeProvider", () => {
+// Adding explicit tests for createQuonfigHook functionality
+describe("createQuonfigHook functionality with QuonfigProvider", () => {
   const defaultContextAttributes = { user: { email: "test@example.com" } };
 
   // Create a custom TypesafeClass for testing
   class CustomFeatureFlags {
-    constructor(public reforge: Reforge) {
+    constructor(public quonfig: Reforge) {
       this.calculateValue = this.calculateValue.bind(this);
     }
 
     get(key: string): unknown {
-      return this.reforge.get(key);
+      return this.quonfig.get(key);
     }
 
     get isSecretFeatureEnabled(): boolean {
-      return this.reforge.isEnabled("secret.feature");
+      return this.quonfig.isEnabled("secret.feature");
     }
 
     get getGreeting(): string {
-      const greeting = this.reforge.get("greeting");
+      const greeting = this.quonfig.get("greeting");
       return typeof greeting === "string" ? greeting : "Default Greeting";
     }
 
     calculateValue(multiplier: number): number {
-      const baseValue = this.reforge.get("base.value");
+      const baseValue = this.quonfig.get("base.value");
       const base = typeof baseValue === "number" ? baseValue : 10;
       return base * multiplier;
     }
   }
 
   // Create a typed hook using our TypesafeClass
-  const useCustomFeatureFlags = createReforgeHook(CustomFeatureFlags);
+  const useCustomFeatureFlags = createQuonfigHook(CustomFeatureFlags);
 
   // Component that uses the custom typed hook
   function CustomHookComponent() {
@@ -390,11 +390,11 @@ describe("createReforgeHook functionality with ReforgeProvider", () => {
     ) as jest.Mock;
   });
 
-  it("creates a working custom hook with createReforgeHook", async () => {
+  it("creates a working custom hook with createQuonfigHook", async () => {
     render(
-      <ReforgeProvider sdkKey="test-sdk-key" contextAttributes={defaultContextAttributes}>
+      <QuonfigProvider sdkKey="test-sdk-key" contextAttributes={defaultContextAttributes}>
         <CustomHookComponent />
-      </ReforgeProvider>
+      </QuonfigProvider>
     );
 
     // Wait for loading to finish
@@ -415,12 +415,12 @@ describe("createReforgeHook functionality with ReforgeProvider", () => {
     const methodSpy = jest.fn().mockReturnValue("test result");
 
     class SpiedClass {
-      constructor(public reforge: Reforge) {
-        constructorSpy(reforge);
+      constructor(public quonfig: Reforge) {
+        constructorSpy(quonfig);
       }
 
       get(key: string): unknown {
-        return this.reforge.get(key);
+        return this.quonfig.get(key);
       }
 
       // eslint-disable-next-line class-methods-use-this
@@ -429,7 +429,7 @@ describe("createReforgeHook functionality with ReforgeProvider", () => {
       }
     }
 
-    const useSpiedHook = createReforgeHook(SpiedClass);
+    const useSpiedHook = createQuonfigHook(SpiedClass);
 
     // Component that forces re-renders
     function ReRenderingComponent() {
@@ -453,7 +453,7 @@ describe("createReforgeHook functionality with ReforgeProvider", () => {
       );
     }
 
-    // Mock the fetch response for ReforgeProvider
+    // Mock the fetch response for QuonfigProvider
     global.fetch = jest.fn(() =>
       Promise.resolve({
         ok: true,
@@ -462,9 +462,9 @@ describe("createReforgeHook functionality with ReforgeProvider", () => {
     ) as jest.Mock;
 
     render(
-      <ReforgeProvider sdkKey="test-sdk-key" contextAttributes={defaultContextAttributes}>
+      <QuonfigProvider sdkKey="test-sdk-key" contextAttributes={defaultContextAttributes}>
         <ReRenderingComponent />
-      </ReforgeProvider>
+      </QuonfigProvider>
     );
 
     // Wait for all re-renders to complete
@@ -472,7 +472,7 @@ describe("createReforgeHook functionality with ReforgeProvider", () => {
       expect(screen.getByTestId("hook-result")).toHaveTextContent("(Render count: 6)");
     });
 
-    // In ReforgeProvider, constructor is called:
+    // In QuonfigProvider, constructor is called:
     // - once on initial render
     // - once during initialization (set's context key)
     // - once for unclear reasons, but unrelated to renders per increased render count in test component
