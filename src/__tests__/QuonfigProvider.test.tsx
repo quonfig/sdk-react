@@ -310,7 +310,9 @@ describe("QuonfigProvider", () => {
     renderInProvider({ contextAttributes: context, onError });
 
     await act(async () => {
-      await new Promise((r) => setTimeout(r, 50));
+      await new Promise((r) => {
+        setTimeout(r, 50);
+      });
     });
 
     expect(onError).toHaveBeenCalledWith(

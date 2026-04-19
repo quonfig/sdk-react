@@ -11,9 +11,6 @@ import {
   encodeContexts,
 } from "@quonfig/javascript";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version } = require("../package.json");
-
 // @quonfig/cli#generate will create interfaces into this namespace for React to consume
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface FrontEndConfigurationAccessor {}
@@ -149,10 +146,7 @@ export type QuonfigProviderProps = SharedSettings & {
   initialFlags?: Record<string, unknown>;
 };
 
-const getContextKey = (
-  contextAttributes: Contexts,
-  onError: (e: Error) => void
-): string => {
+const getContextKey = (contextAttributes: Contexts, onError: (e: Error) => void): string => {
   try {
     if (Object.keys(contextAttributes).length === 0) {
       // eslint-disable-next-line no-console
