@@ -149,7 +149,7 @@ describe("QuonfigProvider", () => {
 
   it("allows providing json configs", async () => {
     await renderWithConfig({
-      subtitle: { value: { type: "json", value: '{ "actualSubtitle": "Json Subtitle" }' } },
+      subtitle: { value: { type: "json", value: { actualSubtitle: "Json Subtitle" } } },
     });
 
     const alert = screen.queryByRole("banner");
