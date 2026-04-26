@@ -301,6 +301,36 @@ describe("QuonfigProvider", () => {
     expect(callback).toHaveBeenCalledWith("greeting", "afterEvaluationCallback", context);
   });
 
+  it("forwards singular apiUrl to the SDK as apiUrls=[apiUrl]", async () => {
+    const fetchMock = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => ({ evaluations: {} }),
+      })
+    ) as jest.Mock;
+    global.fetch = fetchMock;
+
+    render(
+      <QuonfigProvider
+        sdkKey="sdk-key"
+        contextAttributes={defaultContextAttributes}
+        apiUrl="http://localhost:6550"
+        onError={() => {}}
+      >
+        <MyComponent />
+      </QuonfigProvider>
+    );
+
+    await act(async () => {
+      // eslint-disable-next-line no-promise-executor-return
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    expect(fetchMock).toHaveBeenCalled();
+    const calledUrl = fetchMock.mock.calls[0][0] as string;
+    expect(calledUrl.startsWith("http://localhost:6550/")).toBe(true);
+  });
+
   it("triggers onError if the fetch fails", async () => {
     const context = { user: { email: "test@example.com" } };
     const onError = jest.fn();

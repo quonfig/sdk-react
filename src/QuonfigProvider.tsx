@@ -32,13 +32,15 @@ type SharedSettings = Partial<
   Pick<
     InitOptions,
     | "sdkKey"
-    | "apiUrl"
     | "apiUrls"
     | "timeout"
     | "collectEvaluationSummaries"
     | "collectLoggerNames"
   >
 > & {
+  // Convenience alias for a single API URL — normalized to apiUrls=[apiUrl]
+  // before being passed to the underlying SDK, which only accepts apiUrls.
+  apiUrl?: string;
   // We need to redefine the afterEvaluationCallback type to ensure proper dynamic resolution of K
   afterEvaluationCallback?: <K extends keyof TypedFrontEndConfigurationRaw>(
     key: K,
@@ -237,11 +239,12 @@ function QuonfigProvider({
 
         quonfigClient.clientNameString = "sdk-react";
 
+        const resolvedApiUrls = apiUrls ?? (apiUrl ? [apiUrl] : undefined);
+
         const initOptions: InitOptions = {
           context: contextAttributes,
           sdkKey,
-          apiUrl,
-          apiUrls,
+          apiUrls: resolvedApiUrls,
           timeout,
           afterEvaluationCallback,
           collectEvaluationSummaries,
