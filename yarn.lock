@@ -1083,20 +1083,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@quonfig/javascript@file:../sdk-javascript::locator=%40quonfig%2Freact%40workspace%3A.":
-  version: 0.0.2
-  resolution: "@quonfig/javascript@file:../sdk-javascript#../sdk-javascript::hash=d09a7a&locator=%40quonfig%2Freact%40workspace%3A."
+"@quonfig/javascript@portal:../sdk-javascript::locator=%40quonfig%2Freact%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@quonfig/javascript@portal:../sdk-javascript::locator=%40quonfig%2Freact%40workspace%3A."
   dependencies:
     uuid: "npm:^9.0.1"
-  checksum: 10c0/5959d73b3273c7b7bca3396070e4062a7e877f60b051446818fe83689d179267258e80f43ad7ee977d9fa5995ba351a7680fd244f9abb9a5483b57ce798406a5
   languageName: node
-  linkType: hard
+  linkType: soft
 
 "@quonfig/react@workspace:.":
   version: 0.0.0-use.local
   resolution: "@quonfig/react@workspace:."
   dependencies:
-    "@quonfig/javascript": "file:../sdk-javascript"
+    "@quonfig/javascript": "portal:../sdk-javascript"
     "@testing-library/jest-dom": "npm:^5.16.5"
     "@testing-library/react": "npm:^13.3.0"
     "@types/jest": "npm:^28.1.6"
@@ -1124,7 +1123,7 @@ __metadata:
     tsup: "npm:^8.4.0"
     typescript: "npm:^4.7.4"
   peerDependencies:
-    "@quonfig/javascript": ">=0.0.2"
+    "@quonfig/javascript": ">=0.0.3"
     react: ^16 || ^17 || ^18 || ^19
   languageName: unknown
   linkType: soft

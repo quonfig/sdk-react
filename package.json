@@ -44,7 +44,7 @@
     "config"
   ],
   "devDependencies": {
-    "@quonfig/javascript": "file:../sdk-javascript",
+    "@quonfig/javascript": "portal:../sdk-javascript",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
     "@types/jest": "^28.1.6",
