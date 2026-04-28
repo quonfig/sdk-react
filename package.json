@@ -1,7 +1,7 @@
 {
   "packageManager": "yarn@4.11.0",
   "name": "@quonfig/react",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Feature Flags & Dynamic Configuration as a Service",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
