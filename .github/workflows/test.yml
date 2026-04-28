@@ -31,12 +31,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - name: Replace local file dep with npm version for CI
+      - name: Replace local file/portal dep with npm version for CI
         run: |
           node -e "
             const fs = require('fs');
             const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            if (p.devDependencies['@quonfig/javascript'] && p.devDependencies['@quonfig/javascript'].startsWith('file:')) {
+            const dep = p.devDependencies['@quonfig/javascript'];
+            if (dep && (dep.startsWith('file:') || dep.startsWith('portal:') || dep.startsWith('link:'))) {
               p.devDependencies['@quonfig/javascript'] = p.peerDependencies['@quonfig/javascript'] || '>=0.0.2';
             }
             fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');

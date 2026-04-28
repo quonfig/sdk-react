@@ -8,9 +8,17 @@ import * as path from "node:path";
 // "'Quonfig' is missing the following properties from type 'Quonfig'".
 // Using yarn's `portal:` protocol creates a symlink so both paths share a single
 // realpath and a single type identity.
-test("nested @quonfig/javascript shares realpath with workspace sdk-javascript", () => {
+//
+// Skipped in CI: the release/test workflows replace the portal: dep with a
+// published npm version because there is no sibling sdk-javascript checkout
+// next to sdk-react. This guard keeps the test useful locally without breaking
+// CI.
+const workspace = path.resolve(__dirname, "../../../sdk-javascript");
+const workspaceAvailable = fs.existsSync(workspace);
+const maybeTest = workspaceAvailable ? test : test.skip;
+
+maybeTest("nested @quonfig/javascript shares realpath with workspace sdk-javascript", () => {
   const embedded = path.resolve(__dirname, "../../node_modules/@quonfig/javascript");
-  const workspace = path.resolve(__dirname, "../../../sdk-javascript");
 
   expect(fs.existsSync(embedded)).toBe(true);
   expect(fs.existsSync(workspace)).toBe(true);
