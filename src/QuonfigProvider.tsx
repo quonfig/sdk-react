@@ -10,6 +10,7 @@ import {
   Duration,
   encodeContexts,
 } from "@quonfig/javascript";
+import reactSdkVersion from "./version";
 
 // @quonfig/cli#generate will create interfaces into this namespace for React to consume
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -233,7 +234,8 @@ function QuonfigProvider({
           throw new Error("QuonfigProvider: sdkKey is required");
         }
 
-        quonfigClient.clientNameString = "sdk-react";
+        quonfigClient.clientName = "react";
+        quonfigClient.clientVersion = reactSdkVersion;
 
         const resolvedApiUrls = apiUrls ?? (apiUrl ? [apiUrl] : undefined);
 

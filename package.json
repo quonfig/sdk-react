@@ -1,7 +1,7 @@
 {
   "packageManager": "yarn@4.11.0",
   "name": "@quonfig/react",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Feature Flags & Dynamic Configuration as a Service",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
@@ -29,6 +29,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
+    "prebuild": "node scripts/generate-version.mjs",
     "build": "rm -rf dist/ && tsup",
     "dev": "tsup --watch",
     "bundle": "esbuild --minify --target=esnext --bundle --outfile=dist/quonfig-react.bundle.js --global-name=window.quonfigReactNamespace dist/index.cjs && echo 'window.quonfigReact = window.quonfigReactNamespace.quonfigReact' >> dist/quonfig-react.bundle.js",
