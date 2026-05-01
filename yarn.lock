@@ -1123,7 +1123,7 @@ __metadata:
     tsup: "npm:^8.4.0"
     typescript: "npm:^4.7.4"
   peerDependencies:
-    "@quonfig/javascript": ">=0.0.3"
+    "@quonfig/javascript": ">=0.0.11"
     react: ^16 || ^17 || ^18 || ^19
   languageName: unknown
   linkType: soft
