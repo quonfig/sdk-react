@@ -331,6 +331,40 @@ describe("QuonfigProvider", () => {
     expect(calledUrl.startsWith("http://localhost:6550/")).toBe(true);
   });
 
+  it("forwards domain to the SDK so api + telemetry URLs derive from it (qfg-ppuc.2)", async () => {
+    // qfg-8plw: previously, React apps had no way to flip telemetry off prod
+    // because SharedSettings didn't expose telemetryUrl. Forwarding `domain`
+    // through to the underlying client makes the documented staging knob work
+    // end-to-end (api + telemetry resolve in lockstep).
+    const fetchMock = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => ({ evaluations: {} }),
+      })
+    ) as jest.Mock;
+    global.fetch = fetchMock;
+
+    render(
+      <QuonfigProvider
+        sdkKey="sdk-key"
+        contextAttributes={defaultContextAttributes}
+        domain="quonfig-staging.com"
+        onError={() => {}}
+      >
+        <MyComponent />
+      </QuonfigProvider>
+    );
+
+    await act(async () => {
+      // eslint-disable-next-line no-promise-executor-return
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    expect(fetchMock).toHaveBeenCalled();
+    const calledUrl = fetchMock.mock.calls[0][0] as string;
+    expect(calledUrl.startsWith("https://primary.quonfig-staging.com/")).toBe(true);
+  });
+
   it("triggers onError if the fetch fails", async () => {
     const context = { user: { email: "test@example.com" } };
     const onError = jest.fn();
