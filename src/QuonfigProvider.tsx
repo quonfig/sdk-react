@@ -210,6 +210,15 @@ function QuonfigProvider({
 
   const quonfigClient: Quonfig = React.useMemo(() => assignQuonfigClient(), []);
 
+  // qfg-daxq: re-render when the underlying client's in-memory config changes
+  // (poll fetch, setConfig, hydrate). Without this the singleton mutates in
+  // place and React never sees the update.
+  const dataVersion = React.useSyncExternalStore(
+    React.useCallback((onChange) => quonfigClient.subscribe(onChange), [quonfigClient]),
+    React.useCallback(() => quonfigClient.dataVersion, [quonfigClient]),
+    React.useCallback(() => 0, [])
+  );
+
   const contextKey = getContextKey(contextAttributes, onError);
 
   if (initialFlags && initialLoad) {
@@ -299,6 +308,19 @@ function QuonfigProvider({
     quonfigClient.instanceHash,
   ]);
 
+  // qfg-2acr: drain telemetry + stop polling/telemetry timers when the
+  // provider unmounts so route swaps don't leave the singleton polling
+  // forever. Mount-only deps so context-attribute changes don't tear down
+  // the SDK. In React StrictMode the synthetic unmount fires too — we
+  // reset the init-guard ref so the next mount cleanly re-inits.
+  React.useEffect(
+    () => () => {
+      quonfigClient.close().catch(() => {});
+      mostRecentlyLoadingContextKey.current = undefined;
+    },
+    [quonfigClient]
+  );
+
   const value = React.useMemo(() => {
     const baseContext: ProvidedContext = {
       isEnabled: quonfigClient.isEnabled.bind(quonfigClient),
@@ -312,7 +334,7 @@ function QuonfigProvider({
     };
 
     return baseContext;
-  }, [loadedContextKey, loading, quonfigClient.instanceHash, settings]);
+  }, [loadedContextKey, loading, quonfigClient.instanceHash, settings, dataVersion]);
 
   return <QuonfigContext.Provider value={value}>{children}</QuonfigContext.Provider>;
 }

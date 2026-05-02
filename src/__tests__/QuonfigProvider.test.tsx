@@ -540,11 +540,11 @@ describe("createQuonfigHook functionality with QuonfigProvider", () => {
 
     // In QuonfigProvider, constructor is called:
     // - once on initial render
-    // - once during initialization (set's context key)
-    // - once for unclear reasons, but unrelated to renders per increased render count in test component
-    // or the provider's initialization process, which is still valid behavior
-    expect(constructorSpy).toHaveBeenCalledTimes(3);
-    // Method is called once on initial render, once during initialization, and three more times for re-renders
-    expect(methodSpy).toHaveBeenCalledTimes(9);
+    // - once when init's load() lands new data (qfg-daxq: useSyncExternalStore now sees the dataVersion bump)
+    // - once when init.then() flips loading/loadedContextKey
+    // - once for unclear reasons, unrelated to test-component re-renders
+    expect(constructorSpy).toHaveBeenCalledTimes(4);
+    // Method is called once on initial render, three times across init-driven re-renders, plus six for child re-renders
+    expect(methodSpy).toHaveBeenCalledTimes(10);
   });
 });
