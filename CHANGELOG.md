@@ -2,6 +2,10 @@ Changelog
 
 ## 0.0.12 - 2026-05-03
 
+- **chore!: narrow `react` peer dep to `^18 || ^19` (qfg-bsji).** The advertised range
+  (`^16 || ^17 || ^18 || ^19`) was inaccurate since 0.0.10 — `QuonfigProvider` calls
+  `React.useSyncExternalStore`, which only exists in React 18+. Install-time signal now
+  matches runtime reality. Consumers on React 16/17 were already broken at runtime.
 - **feat: `useFlag(key)` per-key selector hook (qfg-lkpm.6).** Subscribes to a single flag's value
   via `useSyncExternalStore` against the underlying client's notify list. Components using
   `useFlag('foo')` no longer re-render when an unrelated flag changes — `useQuonfig()` continues to

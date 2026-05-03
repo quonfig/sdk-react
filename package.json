@@ -90,6 +90,6 @@
   },
   "peerDependencies": {
     "@quonfig/javascript": ">=0.0.14",
-    "react": "^16 || ^17 || ^18 || ^19"
+    "react": "^18 || ^19"
   }
 }

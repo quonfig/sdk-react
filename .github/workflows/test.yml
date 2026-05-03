@@ -9,18 +9,11 @@ jobs:
   build:
     name: Test (Node ${{ matrix.node-version }}, React ${{ matrix.react-version }})
     runs-on: ubuntu-latest
-    # qfg-mol-8jg.5: React 17 cells are non-blocking. The SDK's QuonfigProvider
-    # uses React.useSyncExternalStore (a React 18+ API, added in qfg-daxq) and
-    # the peer-dep range still advertises ^16 || ^17 || ^18 || ^19. The matrix
-    # exists to surface this kind of drift -- the human-review decision (drop
-    # 17 from the peer dep vs. shim with use-sync-external-store) is queued
-    # separately. Drop continue-on-error once that resolves.
-    continue-on-error: ${{ matrix.react-version == '17' }}
     strategy:
       fail-fast: false
       matrix:
         node-version: ["20", "22", "24"]
-        react-version: ["17", "18", "19"]
+        react-version: ["18", "19"]
 
     env:
       NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -74,7 +67,6 @@ jobs:
           REACT_MAJOR: ${{ matrix.react-version }}
         run: |
           case "$REACT_MAJOR" in
-            17) REACT_RANGE="^17.0.2" ;;
             18) REACT_RANGE="^18.3.1" ;;
             19) REACT_RANGE="^19.1.1" ;;
             *) echo "Unknown REACT_MAJOR: $REACT_MAJOR"; exit 1 ;;
