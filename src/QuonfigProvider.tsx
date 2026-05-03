@@ -11,6 +11,7 @@ import {
   encodeContexts,
 } from "@quonfig/javascript";
 import reactSdkVersion from "./version";
+import { normalizeLogger, type Logger, type NormalizedLogger } from "./sdkLogger";
 
 // @quonfig/cli#generate will create interfaces into this namespace for React to consume
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -148,13 +149,17 @@ export type QuonfigProviderProps = SharedSettings & {
   sdkKey: string;
   contextAttributes?: Contexts;
   initialFlags?: Record<string, unknown>;
+  logger?: Logger;
 };
 
-const getContextKey = (contextAttributes: Contexts, onError: (e: Error) => void): string => {
+const getContextKey = (
+  contextAttributes: Contexts,
+  logger: NormalizedLogger,
+  onError: (e: Error) => void
+): string => {
   try {
     if (Object.keys(contextAttributes).length === 0) {
-      // eslint-disable-next-line no-console
-      console.warn(
+      logger.warn(
         "QuonfigProvider: You haven't passed any contextAttributes. See https://docs.quonfig.com/docs/sdks/react#using-context"
       );
     }
@@ -169,10 +174,8 @@ const getContextKey = (contextAttributes: Contexts, onError: (e: Error) => void)
 function QuonfigProvider({
   sdkKey,
   contextAttributes = {},
-  onError = (e: unknown) => {
-    // eslint-disable-next-line no-console
-    console.error(e);
-  },
+  onError: userOnError,
+  logger,
   initialFlags,
   children,
   timeout,
@@ -184,6 +187,18 @@ function QuonfigProvider({
   collectEvaluationSummaries,
   collectLoggerNames,
 }: PropsWithChildren<QuonfigProviderProps>) {
+  const normalizedLogger = React.useMemo(() => normalizeLogger(logger), [logger]);
+  const onError = React.useCallback(
+    (e: unknown) => {
+      if (userOnError) {
+        userOnError(e as Error);
+      } else {
+        const message = e instanceof Error ? e.message : String(e);
+        normalizedLogger.error(message, e);
+      }
+    },
+    [userOnError, normalizedLogger]
+  );
   const settings = {
     sdkKey,
     apiUrl,
@@ -219,7 +234,7 @@ function QuonfigProvider({
     React.useCallback(() => 0, [])
   );
 
-  const contextKey = getContextKey(contextAttributes, onError);
+  const contextKey = getContextKey(contextAttributes, normalizedLogger, onError);
 
   if (initialFlags && initialLoad) {
     quonfigClient.hydrate(initialFlags);
@@ -229,8 +244,7 @@ function QuonfigProvider({
     mostRecentlyLoadingContextKey.current = contextKey;
 
     if (pollInterval) {
-      // eslint-disable-next-line no-console
-      console.warn("Polling is not supported when hydrating flags via initialFlags");
+      normalizedLogger.warn("Polling is not supported when hydrating flags via initialFlags");
     }
   }
 

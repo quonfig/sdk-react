@@ -12,6 +12,7 @@ import {
   TypedFrontEndConfigurationAccessor,
 } from "./QuonfigProvider";
 import { QuonfigTestProvider, QuonfigTestProviderProps } from "./QuonfigTestProvider";
+import type { Logger } from "./sdkLogger";
 
 export {
   QuonfigProvider,
@@ -28,4 +29,5 @@ export {
   FrontEndConfigurationAccessor,
   TypedFrontEndConfigurationAccessor,
   createQuonfigHook,
+  Logger,
 };
