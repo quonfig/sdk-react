@@ -19,7 +19,7 @@ to review incoming issues and pull requests within 10 days.
 ## Reporting Issues
 
 Before reporting a new issue, please ensure that the issue was not already reported or fixed by
-searching through our [issues list](https://github.com/reforgehq/sdk-react/issues).
+searching through our [issues list](https://github.com/quonfig/sdk-react/issues).
 
 When creating a new issue, please be sure to include a **title and clear description**, as much
 relevant information as possible, and, if possible, a test case.
