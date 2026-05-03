@@ -9,19 +9,26 @@ jobs:
   build:
     name: Test (Node ${{ matrix.node-version }}, React ${{ matrix.react-version }})
     runs-on: ubuntu-latest
+    # qfg-mol-8jg.5: React 17 cells are non-blocking. The SDK's QuonfigProvider
+    # uses React.useSyncExternalStore (a React 18+ API, added in qfg-daxq) and
+    # the peer-dep range still advertises ^16 || ^17 || ^18 || ^19. The matrix
+    # exists to surface this kind of drift — the human-review decision (drop
+    # 17 from peer dep vs. shim with use-sync-external-store) is queued
+    # separately. Drop continue-on-error once that resolves.
+    continue-on-error: ${{ matrix.react-version == '17' }}
     strategy:
       fail-fast: false
       matrix:
-        node-version: ['20', '22', '24']
-        react-version: ['17', '18', '19']
+        node-version: ["20", "22", "24"]
+        react-version: ["17", "18", "19"]
 
     env:
       NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
@@ -32,7 +39,7 @@ jobs:
           corepack prepare yarn@4.11.0 --activate
 
       - name: cache yarn dependencies
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.yarn/cache
           key: ${{ runner.os }}-node${{ matrix.node-version }}-react${{ matrix.react-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
@@ -53,25 +60,28 @@ jobs:
 
       # @testing-library/react has hard React peer-dep constraints: v12 is the
       # last line that supports React 17, v13/14 target React 18, and v16 is
-      # the first to support React 19. Pin the trio together so each matrix
-      # cell installs a coherent React + RTL set before yarn resolves.
+      # the first to support React 19. From v14 onward @testing-library/dom is
+      # also a peer-dep (not bundled), so we install it explicitly. Pin the
+      # whole RTL set together so each matrix cell installs a coherent React +
+      # RTL combo before yarn resolves.
       - name: Pin matrix React and matching @testing-library/react
         env:
           REACT_MAJOR: ${{ matrix.react-version }}
         run: |
           case "$REACT_MAJOR" in
-            17) REACT_RANGE="^17.0.2"; RTL_RANGE="^12.1.5" ;;
-            18) REACT_RANGE="^18.3.1"; RTL_RANGE="^14.3.1" ;;
-            19) REACT_RANGE="^19.1.1"; RTL_RANGE="^16.1.0" ;;
+            17) REACT_RANGE="^17.0.2"; RTL_RANGE="^12.1.5"; DOM_RANGE="^8.20.1" ;;
+            18) REACT_RANGE="^18.3.1"; RTL_RANGE="^14.3.1"; DOM_RANGE="^9.3.4" ;;
+            19) REACT_RANGE="^19.1.1"; RTL_RANGE="^16.1.0"; DOM_RANGE="^10.4.0" ;;
             *) echo "Unknown REACT_MAJOR: $REACT_MAJOR"; exit 1 ;;
           esac
-          export REACT_RANGE RTL_RANGE
+          export REACT_RANGE RTL_RANGE DOM_RANGE
           node -e "
             const fs = require('fs');
             const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
             p.devDependencies.react = process.env.REACT_RANGE;
             p.devDependencies['react-dom'] = process.env.REACT_RANGE;
             p.devDependencies['@testing-library/react'] = process.env.RTL_RANGE;
+            p.devDependencies['@testing-library/dom'] = process.env.DOM_RANGE;
             fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
           "
 

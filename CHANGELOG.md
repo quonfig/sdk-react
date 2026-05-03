@@ -2,18 +2,15 @@ Changelog
 
 ## 0.0.10 - 2026-05-02
 
-- **Fix (provider): re-render on poll updates + close client on unmount
-  (qfg-daxq, qfg-2acr).** Previously, poll-driven config mutations were
-  invisible to React because the provider's value `useMemo` only depended on
-  `contextKey`/`loading`/`instanceHash`/`settings`. Now wires the
+- **Fix (provider): re-render on poll updates + close client on unmount (qfg-daxq, qfg-2acr).**
+  Previously, poll-driven config mutations were invisible to React because the provider's value
+  `useMemo` only depended on `contextKey`/`loading`/`instanceHash`/`settings`. Now wires the
   `@quonfig/javascript@>=0.0.14` `subscribe()`/`dataVersion` API through
-  `React.useSyncExternalStore` so every config mutation (poll fetch,
-  `setConfig`, hydrate) triggers a re-render. Also adds a mount-only
-  `useEffect` cleanup that calls `quonfigClient.close()` when
-  `QuonfigProvider` unmounts (drains telemetry, stops polling, stops
-  telemetry timers) and resets the StrictMode init guard so a remount cleanly
-  re-inits — previously an SPA route swap that unmounted the provider left
-  the underlying singleton polling forever and held undrained telemetry.
+  `React.useSyncExternalStore` so every config mutation (poll fetch, `setConfig`, hydrate) triggers
+  a re-render. Also adds a mount-only `useEffect` cleanup that calls `quonfigClient.close()` when
+  `QuonfigProvider` unmounts (drains telemetry, stops polling, stops telemetry timers) and resets
+  the StrictMode init guard so a remount cleanly re-inits — previously an SPA route swap that
+  unmounted the provider left the underlying singleton polling forever and held undrained telemetry.
 - **Peer dep:** `@quonfig/javascript` peer floor bumped to `>=0.0.14`.
 
 ## 0.0.2 - 2025-10-12
