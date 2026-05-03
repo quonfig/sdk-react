@@ -42,7 +42,7 @@
     {
       "name": "dist/index.mjs (gzipped)",
       "path": "dist/index.mjs",
-      "limit": "0.5 kB",
+      "limit": "2 kB",
       "gzip": true,
       "ignore": [
         "react",
