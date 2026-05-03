@@ -38,6 +38,19 @@
     "prettier": "prettier . -l",
     "prettier:fix": "prettier --write ."
   },
+  "size-limit": [
+    {
+      "name": "dist/index.mjs (gzipped)",
+      "path": "dist/index.mjs",
+      "limit": "2 kB",
+      "gzip": true,
+      "ignore": [
+        "react",
+        "react-dom",
+        "@quonfig/javascript"
+      ]
+    }
+  ],
   "author": "Jeffrey Chupp",
   "license": "ISC",
   "keywords": [
@@ -46,6 +59,7 @@
   ],
   "devDependencies": {
     "@quonfig/javascript": "portal:../sdk-javascript",
+    "@size-limit/preset-small-lib": "^11.1.6",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
     "@types/jest": "^28.1.6",
@@ -68,6 +82,7 @@
     "prettier": "^3.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "size-limit": "^11.1.6",
     "ts-jest": "^28.0.7",
     "ts-node": "^10.9.1",
     "tsup": "^8.4.0",
