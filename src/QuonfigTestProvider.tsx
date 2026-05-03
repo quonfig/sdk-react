@@ -1,5 +1,10 @@
 import React, { PropsWithChildren } from "react";
-import { QuonfigContext, assignQuonfigClient, ProvidedContext } from "./QuonfigProvider";
+import {
+  QuonfigContext,
+  QuonfigClientContext,
+  useQuonfigClient,
+  ProvidedContext,
+} from "./QuonfigProvider";
 
 export type QuonfigTestProviderProps = {
   config: Record<string, any>;
@@ -15,7 +20,7 @@ function QuonfigTestProvider({
   const getDuration = (key: string) => config[key];
   const isEnabled = (key: string) => !!get(key);
 
-  const quonfigClient = React.useMemo(() => assignQuonfigClient(), []);
+  const quonfigClient = useQuonfigClient();
 
   const value = React.useMemo(() => {
     quonfigClient.get = get;
@@ -36,7 +41,11 @@ function QuonfigTestProvider({
     return baseContext;
   }, [config, quonfigClient, sdkKey]);
 
-  return <QuonfigContext.Provider value={value}>{children}</QuonfigContext.Provider>;
+  return (
+    <QuonfigClientContext.Provider value={quonfigClient}>
+      <QuonfigContext.Provider value={value}>{children}</QuonfigContext.Provider>
+    </QuonfigClientContext.Provider>
+  );
 }
 
 export { QuonfigTestProvider };

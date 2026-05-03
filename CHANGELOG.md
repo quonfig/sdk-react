@@ -1,5 +1,19 @@
 Changelog
 
+## 0.0.12 - 2026-05-03
+
+- **feat: `useFlag(key)` per-key selector hook (qfg-lkpm.6).** Subscribes to a single flag's value
+  via `useSyncExternalStore` against the underlying client's notify list. Components using
+  `useFlag('foo')` no longer re-render when an unrelated flag changes — `useQuonfig()` continues to
+  re-render on every `dataVersion` bump as before.
+- **fix: replace module-level `globalQuonfigIsTaken` flag with `QuonfigClientContext`
+  (qfg-lkpm.6).** The flag never reset on unmount, so a Provider that mounted, unmounted, and
+  remounted at the top of the tree received a fresh `Quonfig()` instead of the module singleton. The
+  new context-based ownership keys off React tree position: a top-level provider claims the
+  singleton, nested providers mint fresh clients.
+- **docs: Next.js / RSC integration guide.** Documents `initialFlags`, App Router and Pages Router
+  patterns, and hydration-mismatch caveats.
+
 ## 0.0.10 - 2026-05-02
 
 - **Fix (provider): re-render on poll updates + close client on unmount (qfg-daxq, qfg-2acr).**

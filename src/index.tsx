@@ -2,6 +2,7 @@ import { quonfig, type Contexts } from "@quonfig/javascript";
 import {
   QuonfigProvider,
   useQuonfig,
+  useFlag,
   ConfigValue,
   SharedSettings,
   QuonfigProviderProps,
@@ -18,6 +19,7 @@ export {
   QuonfigProvider,
   QuonfigTestProvider,
   useQuonfig,
+  useFlag,
   QuonfigTestProviderProps,
   QuonfigProviderProps,
   ConfigValue,

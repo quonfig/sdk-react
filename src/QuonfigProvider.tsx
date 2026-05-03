@@ -13,6 +13,14 @@ import {
 import reactSdkVersion from "./version";
 import { normalizeLogger, type Logger, type NormalizedLogger } from "./sdkLogger";
 
+// qfg-lkpm.6: per-tree owner context. The value is the active Quonfig client
+// for this provider subtree. A null value means no Provider is above us, so
+// the next mount can claim the module-level singleton; a non-null value
+// signals "you're nested, mint a fresh client". This replaces the previous
+// module-level `globalQuonfigIsTaken` flag, which never reset and so leaked
+// state across test runs and (in principle) across SSR render trees.
+const QuonfigClientContext = React.createContext<Quonfig | null>(null);
+
 // @quonfig/cli#generate will create interfaces into this namespace for React to consume
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface FrontEndConfigurationAccessor {}
@@ -134,15 +142,36 @@ export const useBaseQuonfig = () => React.useContext(QuonfigContext);
 // General hook that returns the context with any explicit type
 export const useQuonfig = (): ProvidedContext => useBaseQuonfig() as unknown as ProvidedContext;
 
-let globalQuonfigIsTaken = false;
+// qfg-lkpm.6: per-key selector hook. Subscribes via the underlying client's
+// notify list rather than React context, so a flag mutation only re-renders
+// components whose selected key actually changed. `useQuonfig()` re-renders
+// on every dataVersion bump because the context value identity changes; this
+// hook bypasses that.
+export function useFlag<K extends keyof TypedFrontEndConfigurationRaw>(
+  key: K
+): TypedFrontEndConfigurationRaw[K];
+export function useFlag(key: string): ConfigValue;
+export function useFlag(key: string): ConfigValue {
+  const client = React.useContext(QuonfigClientContext) ?? quonfig;
+  const subscribe = React.useCallback(
+    (onChange: () => void) => client.subscribe(onChange),
+    [client]
+  );
+  const getSnapshot = React.useCallback(() => client.get(key), [client, key]);
+  const getServerSnapshot = React.useCallback((): ConfigValue => undefined, []);
+  return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
 
-export const assignQuonfigClient = () => {
-  if (globalQuonfigIsTaken) {
-    return new Quonfig();
-  }
-
-  globalQuonfigIsTaken = true;
-  return quonfig;
+// qfg-lkpm.6: replacement for the old module-level `globalQuonfigIsTaken`
+// flag. A provider asks "is there already a Quonfig client above me in the
+// React tree?". If yes, mint a fresh client (multi-tenant nesting); if no,
+// claim the module singleton so non-React code that imports `quonfig`
+// directly sees the same instance.
+export const useQuonfigClient = (): Quonfig => {
+  const parentClient = React.useContext(QuonfigClientContext);
+  // Mount-only: parent context is fixed for the lifetime of this provider.
+  const parentClientRef = React.useRef(parentClient);
+  return React.useMemo(() => (parentClientRef.current ? new Quonfig() : quonfig), []);
 };
 
 export type QuonfigProviderProps = SharedSettings & {
@@ -223,7 +252,7 @@ function QuonfigProvider({
   // changes
   const [loadedContextKey, setLoadedContextKey] = React.useState("");
 
-  const quonfigClient: Quonfig = React.useMemo(() => assignQuonfigClient(), []);
+  const quonfigClient: Quonfig = useQuonfigClient();
 
   // qfg-daxq: re-render when the underlying client's in-memory config changes
   // (poll fetch, setConfig, hydrate). Without this the singleton mutates in
@@ -350,7 +379,11 @@ function QuonfigProvider({
     return baseContext;
   }, [loadedContextKey, loading, quonfigClient.instanceHash, settings, dataVersion]);
 
-  return <QuonfigContext.Provider value={value}>{children}</QuonfigContext.Provider>;
+  return (
+    <QuonfigClientContext.Provider value={quonfigClient}>
+      <QuonfigContext.Provider value={value}>{children}</QuonfigContext.Provider>
+    </QuonfigClientContext.Provider>
+  );
 }
 
-export { QuonfigProvider, ConfigValue, SharedSettings, QuonfigTypesafeClass };
+export { QuonfigProvider, QuonfigClientContext, ConfigValue, SharedSettings, QuonfigTypesafeClass };
