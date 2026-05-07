@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: ["20", "22", "24"]
+        node-version: ["20.9.0", "22", "24"]
         react-version: ["18", "19"]
 
     env:

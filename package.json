@@ -28,6 +28,9 @@
     "LICENSE",
     "CHANGELOG.md"
   ],
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "prebuild": "node scripts/generate-version.mjs",
     "build": "rm -rf dist/ && tsup",
@@ -36,7 +39,8 @@
     "test": "tsup && jest --verbose",
     "lint": "eslint --ext .ts,.tsx src/",
     "prettier": "prettier . -l",
-    "prettier:fix": "prettier --write ."
+    "prettier:fix": "prettier --write .",
+    "version": "prettier --write CHANGELOG.md README.md && git add CHANGELOG.md README.md"
   },
   "size-limit": [
     {
