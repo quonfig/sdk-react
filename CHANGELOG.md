@@ -1,5 +1,11 @@
 Changelog
 
+## 0.0.13 - 2026-05-10
+
+- **chore: declare `engines.node` >=20.9.0 + pin CI floor (qfg-y7xh).** Adds an explicit
+  `engines.node` field to `package.json` so npm warns consumers on unsupported Node, and pins the CI
+  matrix floor to 20.9.0 to match. No runtime behavior change.
+
 ## 0.0.12 - 2026-05-03
 
 - **chore!: narrow `react` peer dep to `^18 || ^19` (qfg-bsji).** The advertised range
