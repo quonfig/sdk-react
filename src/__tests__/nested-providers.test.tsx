@@ -219,7 +219,6 @@ it("allows nested `QuonfigProvider`s that use new settings", async () => {
 
   const innerProviderSettings = {
     sdkKey: "inner-sdk-key",
-    collectLoggerNames: true,
   };
 
   render(
@@ -255,7 +254,6 @@ it("allows nested `QuonfigProvider`s that use new settings", async () => {
   expect(innerQuonfigWrapper.getAttribute("data-quonfig-settings")).toStrictEqual(
     JSON.stringify({
       sdkKey: "inner-sdk-key",
-      collectLoggerNames: true,
     })
   );
 });

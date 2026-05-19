@@ -39,15 +39,7 @@ type QuonfigTypesafeClass<T = unknown> = new (
 ) => T;
 
 type SharedSettings = Partial<
-  Pick<
-    InitOptions,
-    | "sdkKey"
-    | "apiUrls"
-    | "domain"
-    | "timeout"
-    | "collectEvaluationSummaries"
-    | "collectLoggerNames"
-  >
+  Pick<InitOptions, "sdkKey" | "apiUrls" | "domain" | "timeout" | "collectEvaluationSummaries">
 > & {
   // Convenience alias for a single API URL — normalized to apiUrls=[apiUrl]
   // before being passed to the underlying SDK, which only accepts apiUrls.
@@ -214,7 +206,6 @@ function QuonfigProvider({
   pollInterval,
   afterEvaluationCallback = undefined,
   collectEvaluationSummaries,
-  collectLoggerNames,
 }: PropsWithChildren<QuonfigProviderProps>) {
   const normalizedLogger = React.useMemo(() => normalizeLogger(logger), [logger]);
   const onError = React.useCallback(
@@ -238,7 +229,6 @@ function QuonfigProvider({
     onError,
     afterEvaluationCallback,
     collectEvaluationSummaries,
-    collectLoggerNames,
   };
 
   // We use this state to prevent a double-init when useEffect fires due to
@@ -306,7 +296,6 @@ function QuonfigProvider({
           timeout,
           afterEvaluationCallback,
           collectEvaluationSummaries,
-          collectLoggerNames,
         };
 
         quonfigClient

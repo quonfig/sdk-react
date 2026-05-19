@@ -1,5 +1,12 @@
 Changelog
 
+## 0.0.14 - 2026-05-19
+
+- **Breaking (typing-level):** removed the `collectLoggerNames` prop from `<QuonfigProvider>`
+  (qfg-owyw). The underlying `@quonfig/javascript` option was removed in 0.0.17 (qfg-o2fk) — there
+  is no consumer for the per-logger telemetry on the server. TypeScript callers passing
+  `collectLoggerNames` to the provider will get a type error; drop the prop.
+
 ## 0.0.13 - 2026-05-10
 
 - **chore: declare `engines.node` >=20.9.0 + pin CI floor (qfg-y7xh).** Adds an explicit
