@@ -47,6 +47,25 @@ relevant information as possible, and, if possible, a test case.
 yarn install
 ```
 
+This installs the published `@quonfig/javascript` from npm. The `devDependencies` entry is a plain
+npm range that matches the `peerDependencies` floor — not a `portal:`/`file:`/`link:` reference to
+the sibling `../sdk-javascript` directory. A published range is what lets Dependabot's isolated,
+single-repo npm updater resolve the full dependency tree (see qfg-zu8o).
+
+### Developing against a local `../sdk-javascript`
+
+When you need to test sdk-react against an unpublished change in the sibling `sdk-javascript` repo,
+link it explicitly instead of editing `package.json`:
+
+```sh
+# from the sdk-javascript repo, point a link at this repo
+yarn link --all --relative ../sdk-react
+```
+
+`yarn link` records the override in `.yarn/` build state, not in `package.json`, so it does not leak
+into commits or break Dependabot. Run `yarn install` in `sdk-react` afterward to drop the link and
+return to the published package.
+
 ## Building Package
 
 ```sh

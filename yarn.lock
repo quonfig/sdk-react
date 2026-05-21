@@ -1101,19 +1101,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@quonfig/javascript@portal:../sdk-javascript::locator=%40quonfig%2Freact%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "@quonfig/javascript@portal:../sdk-javascript::locator=%40quonfig%2Freact%40workspace%3A."
+"@quonfig/javascript@npm:>=0.0.14":
+  version: 0.0.16
+  resolution: "@quonfig/javascript@npm:0.0.16"
   dependencies:
     uuid: "npm:^9.0.1"
+  checksum: 10c0/989bf06d91a711961507f26255d75579c0e5486be8f293bc3236fca7acc020d0b70f2b124ad875ad40b26fb622f89f71a7df4c7491820d97e4dbacc938531849
   languageName: node
-  linkType: soft
+  linkType: hard
 
 "@quonfig/react@workspace:.":
   version: 0.0.0-use.local
   resolution: "@quonfig/react@workspace:."
   dependencies:
-    "@quonfig/javascript": "portal:../sdk-javascript"
+    "@quonfig/javascript": "npm:>=0.0.14"
     "@size-limit/preset-small-lib": "npm:^11.1.6"
     "@testing-library/jest-dom": "npm:^5.16.5"
     "@testing-library/react": "npm:^13.3.0"

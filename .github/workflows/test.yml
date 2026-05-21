@@ -41,18 +41,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node${{ matrix.node-version }}-react${{ matrix.react-version }}-yarn-
 
-      - name: Replace local file/portal dep with npm version for CI
-        run: |
-          node -e "
-            const fs = require('fs');
-            const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            const dep = p.devDependencies['@quonfig/javascript'];
-            if (dep && (dep.startsWith('file:') || dep.startsWith('portal:') || dep.startsWith('link:'))) {
-              p.devDependencies['@quonfig/javascript'] = p.peerDependencies['@quonfig/javascript'] || '>=0.0.2';
-            }
-            fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
-          "
-
       # Pin matrix React + react-dom only -- keep @testing-library/react at the
       # repo-default v13.3 across every cell. RTL v13 was authored against
       # React 18 but works in practice on 17 (peer warning, no functional
