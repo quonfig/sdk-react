@@ -20,3 +20,14 @@ updates:
       - dependencies
       - npm
     open-pull-requests-limit: 5
+    ignore:
+      # @quonfig/javascript is wired as a yarn `portal:` dep pointing at the
+      # sibling ../sdk-javascript checkout, which only exists inside the
+      # monorepo. Dependabot's updater runs in an isolated single-repo
+      # container, so it cannot resolve the portal manifest — every npm
+      # update job fails with `dependency_file_not_resolvable`
+      # ("Manifest not found"). CI sidesteps this with a "Replace local
+      # file/portal dep with npm version" step in ci.yml; Dependabot has no
+      # such hook. The portal link is a local workspace pointer, never an
+      # upgradeable npm package, so excluding it is correct.
+      - dependency-name: "@quonfig/javascript"
