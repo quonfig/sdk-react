@@ -1,11 +1,17 @@
 Changelog
 
-## 0.0.14 - 2026-05-19
+## 0.0.14 - 2026-05-21
 
 - **Breaking (typing-level):** removed the `collectLoggerNames` prop from `<QuonfigProvider>`
   (qfg-owyw). The underlying `@quonfig/javascript` option was removed in 0.0.17 (qfg-o2fk) — there
   is no consumer for the per-logger telemetry on the server. TypeScript callers passing
   `collectLoggerNames` to the provider will get a type error; drop the prop.
+- **chore: replace the `@quonfig/javascript` `portal:` devDependency with a published npm range
+  (qfg-zu8o).** The dev entry was `portal:../sdk-javascript`, which only resolves inside the
+  monorepo; Dependabot's isolated single-repo npm updater could not resolve it and every npm update
+  job failed. The devDependency is now a plain npm range (`>=0.0.14`) matching the
+  `peerDependencies` floor. No runtime or published-package change — local development against an
+  unpublished sibling `../sdk-javascript` now uses `yarn link` (see `CONTRIBUTING.md`).
 
 ## 0.0.13 - 2026-05-10
 
