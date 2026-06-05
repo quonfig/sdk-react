@@ -1,5 +1,16 @@
 Changelog
 
+## 0.0.15 - 2026-06-05
+
+- Bumped the `@quonfig/javascript` floor to `>=0.0.18` to pick up ETag/304 conditional polling
+  (qfg-iikt) and the `poll()` bootstrap self-heal (qfg-8uw5). Without the bump the provider's
+  polling could not benefit from the 304 fast-path or the startup-blip recovery.
+- Fix: `<QuonfigProvider>` now catches the rejection from its initial `poll()` call. The provider
+  fired `poll()` fire-and-forget inside `init()`'s `.then` (not awaited or returned), so a
+  first-fetch rejection became an unhandled promise rejection while the app showed loaded=true. It
+  is now logged as a non-fatal warning (not routed through `onError`) since the underlying polling
+  loop self-heals on the next tick (qfg-8uw5).
+
 ## 0.0.14 - 2026-05-21
 
 - **Breaking (typing-level):** removed the `collectLoggerNames` prop from `<QuonfigProvider>`
