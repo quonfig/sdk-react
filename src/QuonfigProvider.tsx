@@ -305,7 +305,15 @@ function QuonfigProvider({
             setLoading(false);
 
             if (pollInterval) {
-              quonfigClient.poll({ frequencyInMs: pollInterval });
+              // poll()'s first fetch can reject on a startup network blip, but
+              // the polling loop is still scheduled and self-heals on the next
+              // tick (qfg-8uw5). Attach a catch so that expected first-fetch
+              // rejection is a non-fatal warning, not an unhandled rejection —
+              // and don't route it through onError, which would surface a
+              // user-facing error for a transient blip that recovers on its own.
+              quonfigClient.poll({ frequencyInMs: pollInterval }).catch((err) => {
+                normalizedLogger.warn("Initial poll fetch failed; polling will retry", err);
+              });
             }
           })
           .catch((reason: any) => {
