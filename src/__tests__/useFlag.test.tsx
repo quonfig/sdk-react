@@ -28,6 +28,8 @@ const stubFetch = (initial: Record<string, unknown> = {}) => {
   global.fetch = jest.fn(() =>
     Promise.resolve({
       ok: true,
+      status: 200,
+      headers: new Headers(),
       json: () => ({ evaluations: initial }),
     })
   ) as jest.Mock;

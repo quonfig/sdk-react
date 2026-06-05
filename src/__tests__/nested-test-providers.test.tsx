@@ -18,6 +18,8 @@ const stubConfig = (config: Config) =>
     global.fetch = jest.fn(() =>
       Promise.resolve({
         ok: true,
+        status: 200,
+        headers: new Headers(),
         json: () => {
           setTimeout(resolve);
           return { evaluations: config };

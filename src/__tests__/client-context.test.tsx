@@ -22,6 +22,8 @@ beforeEach(() => {
   global.fetch = jest.fn(() =>
     Promise.resolve({
       ok: true,
+      status: 200,
+      headers: new Headers(),
       json: () => ({ evaluations: {} }),
     })
   ) as jest.Mock;

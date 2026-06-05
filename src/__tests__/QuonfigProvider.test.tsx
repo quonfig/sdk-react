@@ -74,6 +74,8 @@ describe("QuonfigProvider", () => {
       global.fetch = jest.fn(() =>
         Promise.resolve({
           ok: true,
+          status: 200,
+          headers: new Headers(),
           json: () => {
             setTimeout(resolve);
             return { evaluations: config };
@@ -247,6 +249,8 @@ describe("QuonfigProvider", () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({
         ok: true,
+        status: 200,
+        headers: new Headers(),
         json: () => ({ evaluations: {} }),
       })
     ) as jest.Mock;
@@ -305,6 +309,8 @@ describe("QuonfigProvider", () => {
     const fetchMock = jest.fn(() =>
       Promise.resolve({
         ok: true,
+        status: 200,
+        headers: new Headers(),
         json: () => ({ evaluations: {} }),
       })
     ) as jest.Mock;
@@ -339,6 +345,8 @@ describe("QuonfigProvider", () => {
     const fetchMock = jest.fn(() =>
       Promise.resolve({
         ok: true,
+        status: 200,
+        headers: new Headers(),
         json: () => ({ evaluations: {} }),
       })
     ) as jest.Mock;
@@ -445,6 +453,8 @@ describe("createQuonfigHook functionality with QuonfigProvider", () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({
         ok: true,
+        status: 200,
+        headers: new Headers(),
         json: () => ({
           evaluations: {
             greeting: { value: { type: "string", value: "Hello from Custom Hook" } },
@@ -523,6 +533,8 @@ describe("createQuonfigHook functionality with QuonfigProvider", () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({
         ok: true,
+        status: 200,
+        headers: new Headers(),
         json: () => ({ evaluations: {} }),
       })
     ) as jest.Mock;
