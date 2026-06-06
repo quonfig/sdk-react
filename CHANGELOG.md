@@ -1,5 +1,11 @@
 Changelog
 
+## 1.0.0 - 2026-06-06
+
+- **Stable 1.0.0 release.** The Quonfig React SDK is now declared stable. No API or behavior changes
+  from 0.0.15 — this is a coordinated 1.0.0 version stamp across the entire Quonfig SDK family.
+  Tracks `@quonfig/javascript` >= 1.0.0.
+
 ## 0.0.15 - 2026-06-05
 
 - Bumped the `@quonfig/javascript` floor to `>=0.0.18` to pick up ETag/304 conditional polling
