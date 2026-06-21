@@ -1,5 +1,17 @@
 Changelog
 
+## 1.1.0 - 2026-06-21
+
+- **Inherits secondary-delivery failover from `@quonfig/javascript` 1.1.0** — the reject-older
+  install guard (§5f), the parallel hedged loader (§5e), and the last-known-good localStorage cache
+  (§5h). `QuonfigProvider` is a pure wrapper over the `@quonfig/javascript` client, so this is a
+  no-code-change inheritance; the contract is pinned by a failover test in `@quonfig/javascript`. No
+  API changes to this package.
+- The `@quonfig/javascript` peer-dependency range is deliberately kept at `>=1.0.0` (not tightened
+  to `>=1.1.0`): the failover behavior is additive, the existing range already admits 1.1.0, and
+  tightening the floor before `@quonfig/javascript` 1.1.0 is published would break `yarn install`
+  during the publish window. Consumers automatically pick up 1.1.0 once it is published.
+
 ## 1.0.0 - 2026-06-06
 
 - **Stable 1.0.0 release.** The Quonfig React SDK is now declared stable. No API or behavior changes
