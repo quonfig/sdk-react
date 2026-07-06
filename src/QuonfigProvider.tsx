@@ -39,7 +39,10 @@ type QuonfigTypesafeClass<T = unknown> = new (
 ) => T;
 
 type SharedSettings = Partial<
-  Pick<InitOptions, "sdkKey" | "apiUrls" | "domain" | "timeout" | "collectEvaluationSummaries">
+  Pick<
+    InitOptions,
+    "sdkKey" | "apiUrls" | "domain" | "timeout" | "hedgeDelay" | "collectEvaluationSummaries"
+  >
 > & {
   // Convenience alias for a single API URL — normalized to apiUrls=[apiUrl]
   // before being passed to the underlying SDK, which only accepts apiUrls.
@@ -200,6 +203,7 @@ function QuonfigProvider({
   initialFlags,
   children,
   timeout,
+  hedgeDelay,
   apiUrl,
   apiUrls,
   domain,
@@ -225,6 +229,7 @@ function QuonfigProvider({
     apiUrls,
     domain,
     timeout,
+    hedgeDelay,
     pollInterval,
     onError,
     afterEvaluationCallback,
@@ -294,6 +299,7 @@ function QuonfigProvider({
           apiUrls: resolvedApiUrls,
           domain,
           timeout,
+          hedgeDelay,
           afterEvaluationCallback,
           collectEvaluationSummaries,
         };

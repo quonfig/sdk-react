@@ -42,9 +42,17 @@ Here's an explanation of each provider prop:
 | `sdkKey`            | yes      | `string`                  | your Quonfig SDK key                                                                                        |
 | `onError`           | no       | `(error) => void`         | callback invoked if quonfig fails to initialize                                                             |
 | `contextAttributes` | no       | `Contexts`                | this is the context attributes object you passed when setting up the provider                               |
-| `timeout`           | no       | `number`                  | initialization timeout (defaults to 10 seconds)                                                             |
+| `timeout`           | no       | `number`                  | per-request fetch timeout in ms (defaults to ~3s). Keep it above `hedgeDelay` — see note below.             |
+| `hedgeDelay`        | no       | `number`                  | ms the hedged loader waits for the primary before also firing the secondary in parallel (defaults to ~2s).  |
 | `pollInterval`      | no       | `number`                  | configures quonfig to poll for updates every `pollInterval` ms.                                             |
 | `initialFlags`      | no       | `Record<string, unknown>` | seed flag values evaluated on the server — see [Next.js / RSC integration](#nextjs--rsc-integration) below. |
+
+> **`timeout` must stay above `hedgeDelay`.** The loader fires the primary URL first and, if it is
+> slow (no answer within `hedgeDelay`), also fires the secondary in parallel. If you set `timeout`
+> at or below `hedgeDelay`, the primary is aborted before the hedge can fire, degrading the parallel
+> hedge to error-only failover (the secondary is only tried after the primary fully times out). The
+> SDK logs a warning when this happens. Raise `hedgeDelay` toward your primary's measured p99 to
+> contact the secondary less often.
 
 ### Usage in Your Components
 
