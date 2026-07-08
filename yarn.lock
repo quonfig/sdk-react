@@ -1101,12 +1101,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@quonfig/javascript@npm:>=1.1.0":
-  version: 1.1.0
-  resolution: "@quonfig/javascript@npm:1.1.0"
+"@quonfig/javascript@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@quonfig/javascript@npm:1.2.0"
   dependencies:
     uuid: "npm:^9.0.1"
-  checksum: 10c0/f06a3f5360411917514e2910715cdbe7bf06039350e63bbd2c3bb7ea7d325c78f1488f26573a4ca1d1c82ab12af308ee4c8ca1ce6cf4a4030c102aee7d1ac1f3
+  checksum: 10c0/8b8221fe7a1d464b9008aaa2210012a8d9364c0c75abd83f095b0cc61a3ef2afe7a815e68acfe94e22b01fb53a730736b518f02df4b86991763e9216186f7c37
   languageName: node
   linkType: hard
 
@@ -1114,7 +1114,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@quonfig/react@workspace:."
   dependencies:
-    "@quonfig/javascript": "npm:>=1.1.0"
+    "@quonfig/javascript": "npm:^1.2.0"
     "@size-limit/preset-small-lib": "npm:^11.1.6"
     "@testing-library/jest-dom": "npm:^5.16.5"
     "@testing-library/react": "npm:^13.3.0"
@@ -1144,7 +1144,7 @@ __metadata:
     tsup: "npm:^8.4.0"
     typescript: "npm:^4.7.4"
   peerDependencies:
-    "@quonfig/javascript": ">=1.1.0"
+    "@quonfig/javascript": ^1.2.0
     react: ^18 || ^19
   languageName: unknown
   linkType: soft

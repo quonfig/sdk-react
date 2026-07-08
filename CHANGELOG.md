@@ -1,6 +1,6 @@
 Changelog
 
-## Unreleased
+## 1.2.0 - 2026-07-08
 
 - **`hedgeDelay` is now a `QuonfigProvider` prop.** React consumers can tune the parallel hedge
   (spec 5e) against their primary's p99 without dropping to the explicit-`apiUrls` escape hatch. The
@@ -8,9 +8,10 @@ Changelog
   Loader. `@quonfig/react-native` inherits it via `export *`. Documented the `timeout > hedgeDelay`
   invariant in the README (a `timeout` at or below `hedgeDelay` degrades the hedge to error-only
   failover; the SDK warns).
-- Bumped the `@quonfig/javascript` peer + dev floor `>=1.0.0` → `>=1.1.0`. `hedgeDelay` and the
-  hedged loader landed in `@quonfig/javascript` 1.1.0 (now published), so the feature requires it at
-  runtime; the 1.1.0 range was previously kept loose only until 1.1.0 was published.
+- Bumped the `@quonfig/javascript` peer + dev dependency to `^1.2.0` (from the `>=1.0.0` range
+  shipped in 1.1.0). `hedgeDelay` and the hedged loader require `@quonfig/javascript` 1.1.0+ at
+  runtime, so the old loose floor could resolve to an incompatible 1.0.x; this release pins to the
+  current 1.2.0 as part of the coordinated frontend release train.
 
 ## 1.1.0 - 2026-06-21
 
