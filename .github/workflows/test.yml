@@ -74,9 +74,6 @@ jobs:
       - name: Run tests
         run: yarn test
 
-      - name: Run lints
-        run: yarn lint
-
       - name: Run formatter
         run: yarn prettier
 
@@ -85,3 +82,44 @@ jobs:
 
       - name: Check bundle size budget
         run: yarn size-limit
+
+  # Lint is its own job, off the matrix: ESLint 10 declares
+  # engines.node ^20.19.0 || ^22.13.0 || >=24, which the matrix's 20.9.0 floor
+  # cell does not satisfy. That floor is deliberate -- it is the package's
+  # published `engines` requirement and the test matrix must keep proving the
+  # SDK runs there. ESLint is a devDependency only, so nothing about what we
+  # publish changes; the linter just runs on a modern Node (matching
+  # .tool-versions) while tests keep covering 20.9.0/22/24 x React 18/19.
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    env:
+      NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: enable corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@4.11.0 --activate
+
+      - name: cache yarn dependencies
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.yarn/cache
+          key: ${{ runner.os }}-lint-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-lint-yarn-
+
+      - name: Install modules
+        run: yarn install --immutable
+
+      - name: Run lints
+        run: yarn lint

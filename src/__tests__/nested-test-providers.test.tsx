@@ -75,7 +75,6 @@ function OuterUserComponent({
         <h1>You are looking at {admin.name}</h1>
         <InnerProvider
           config={innerTestConfig}
-          /* eslint-disable-next-line react/jsx-props-no-spreading */
           {...settings}
           sdkKey={settings.sdkKey!}
           contextAttributes={{ user: { email: "test@example.com" } }}

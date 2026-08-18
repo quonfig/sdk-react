@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import React, { act } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
@@ -189,7 +188,6 @@ describe("QuonfigProvider", () => {
 
     await newConfigPromise;
     // wait for render
-    // eslint-disable-next-line no-promise-executor-return
     await new Promise((r) => setTimeout(r, 1));
 
     const updatedAlert = screen.queryByRole("alert");
@@ -198,7 +196,6 @@ describe("QuonfigProvider", () => {
 
   it("re-fetches when you update the contextAttributes prop on the provider", async () => {
     let setContextAttributes: (attributes: Contexts) => void = () => {
-      // eslint-disable-next-line no-console
       console.warn("setContextAttributes not set");
     };
 
@@ -233,7 +230,6 @@ describe("QuonfigProvider", () => {
 
     await newRequestPromise;
     // wait for render
-    // eslint-disable-next-line no-promise-executor-return
     await new Promise((r) => setTimeout(r, 1));
 
     const updatedAlert = screen.queryByRole("alert");
@@ -299,7 +295,6 @@ describe("QuonfigProvider", () => {
     });
 
     // wait for async callback to be called
-    // eslint-disable-next-line no-promise-executor-return
     await new Promise((r) => setTimeout(r, 1));
 
     expect(callback).toHaveBeenCalledWith("greeting", "afterEvaluationCallback", context);
@@ -328,7 +323,6 @@ describe("QuonfigProvider", () => {
     );
 
     await act(async () => {
-      // eslint-disable-next-line no-promise-executor-return
       await new Promise((r) => setTimeout(r, 10));
     });
 
@@ -364,7 +358,6 @@ describe("QuonfigProvider", () => {
     );
 
     await act(async () => {
-      // eslint-disable-next-line no-promise-executor-return
       await new Promise((r) => setTimeout(r, 10));
     });
 
@@ -475,7 +468,6 @@ describe("createQuonfigHook functionality with QuonfigProvider", () => {
 
     // Wait for loading to finish
     await act(async () => {
-      // eslint-disable-next-line no-promise-executor-return
       await new Promise((r) => setTimeout(r, 100));
     });
 
@@ -499,7 +491,6 @@ describe("createQuonfigHook functionality with QuonfigProvider", () => {
         return this.quonfig.get(key);
       }
 
-      // eslint-disable-next-line class-methods-use-this
       testMethod(): string {
         return methodSpy();
       }

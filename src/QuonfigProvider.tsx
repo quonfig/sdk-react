@@ -22,7 +22,7 @@ import { normalizeLogger, type Logger, type NormalizedLogger } from "./sdkLogger
 const QuonfigClientContext = React.createContext<Quonfig | null>(null);
 
 // @quonfig/cli#generate will create interfaces into this namespace for React to consume
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface FrontEndConfigurationAccessor {}
 
 export type TypedFrontEndConfigurationAccessor = keyof FrontEndConfigurationAccessor extends never
@@ -33,10 +33,7 @@ export type TypedFrontEndConfigurationAccessor = keyof FrontEndConfigurationAcce
 
 type ClassMethods<T> = { [K in keyof T]: T[K] };
 
-type QuonfigTypesafeClass<T = unknown> = new (
-  // eslint-disable-next-line no-shadow
-  quonfig: Quonfig
-) => T;
+type QuonfigTypesafeClass<T = unknown> = new (quonfig: Quonfig) => T;
 
 type SharedSettings = Partial<
   Pick<

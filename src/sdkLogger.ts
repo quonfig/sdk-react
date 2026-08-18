@@ -26,12 +26,10 @@ const PREFIX = "[quonfig]";
 
 function defaultSdkLogger(): NormalizedLogger {
   return {
-    /* eslint-disable no-console */
     debug: (message, ...args) => console.debug(PREFIX, message, ...args),
     info: (message, ...args) => console.info(PREFIX, message, ...args),
     warn: (message, ...args) => console.warn(PREFIX, message, ...args),
     error: (message, ...args) => console.error(PREFIX, message, ...args),
-    /* eslint-enable no-console */
   };
 }
 

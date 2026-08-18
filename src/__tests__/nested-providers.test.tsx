@@ -7,7 +7,6 @@ import { quonfig as globalQuonfig, QuonfigProvider, useQuonfig, SharedSettings }
 
 enableFetchMocks();
 
-// eslint-disable-next-line no-console
 const onError = console.error;
 const sdkKey = "nested-providers-test-sdk-key";
 
@@ -70,7 +69,6 @@ function OuterUserComponent({
 
       <div>
         <h1>You are looking at {admin.name}</h1>
-        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
         <QuonfigProvider
           {...innerSettings}
           contextAttributes={innerUserContext}
@@ -96,7 +94,6 @@ function App({
       sdkKey={sdkKey}
       contextAttributes={outerUserContext}
       onError={onError}
-      // eslint-disable-next-line react/jsx-boolean-value
       collectEvaluationSummaries={false}
     >
       <OuterUserComponent

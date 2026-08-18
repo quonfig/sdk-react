@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
@@ -178,7 +177,6 @@ describe("createQuonfigHook functionality with QuonfigTestProvider", () => {
         return this.quonfig.get(key);
       }
 
-      // eslint-disable-next-line class-methods-use-this
       testMethod(): string {
         return methodSpy();
       }

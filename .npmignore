@@ -14,7 +14,7 @@ scripts/
 tsconfig.json
 tsup.config.ts
 jest.config.js
-.eslintrc.js
+eslint.config.mjs
 .prettierrc
 .prettierignore
 .github/

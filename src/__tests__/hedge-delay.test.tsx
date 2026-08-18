@@ -50,7 +50,6 @@ it("forwards hedgeDelay to the underlying client init()", async () => {
   );
 
   await act(async () => {
-    // eslint-disable-next-line no-promise-executor-return
     await new Promise((r) => setTimeout(r, 10));
   });
 
@@ -80,7 +79,6 @@ it("reaches the client's Loader so the hedge actually uses it", async () => {
   );
 
   await act(async () => {
-    // eslint-disable-next-line no-promise-executor-return
     await new Promise((r) => setTimeout(r, 10));
   });
 
@@ -96,7 +94,6 @@ it("omits hedgeDelay when the prop is not set (client falls back to its default)
   );
 
   await act(async () => {
-    // eslint-disable-next-line no-promise-executor-return
     await new Promise((r) => setTimeout(r, 10));
   });
 
