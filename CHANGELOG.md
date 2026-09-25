@@ -1,5 +1,20 @@
 Changelog
 
+## Unreleased
+
+- **Inherits the telemetry transport policy from `@quonfig/javascript` 1.3.0 (qfg-y8je.11).**
+  `QuonfigProvider` is a pure wrapper over the `@quonfig/javascript` client, so this is a
+  no-code-change inheritance: telemetry POSTs get their own 10s deadline, failed batches are kept in
+  memory (5 batches / 512KB / 5 min) and resent unchanged no sooner than 30s later, one POST is in
+  flight at a time, 401/403/404 disable telemetry for the page, logging is quiet unless data is
+  actually dropped, and the final flush moves from `beforeunload` to a `pagehide` keepalive POST
+  with a 2s deadline. Also fixes a telemetry network error surfacing as an unhandled promise
+  rejection, and `close()` (called on provider unmount) leaving a timer armed. The new `telemetry*`
+  options are available on the underlying client's `init()`; no new provider props and no API change
+  in this package.
+- Bumps the `@quonfig/javascript` peer + dev dependency to `^1.3.0` (lands with the release, once
+  1.3.0 is on npm).
+
 ## 1.2.0 - 2026-07-08
 
 - **`hedgeDelay` is now a `QuonfigProvider` prop.** React consumers can tune the parallel hedge
