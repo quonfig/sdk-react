@@ -1,6 +1,6 @@
 Changelog
 
-## Unreleased
+## 1.3.0 - 2026-09-25
 
 - **Inherits the telemetry transport policy from `@quonfig/javascript` 1.3.0 (qfg-y8je.11).**
   `QuonfigProvider` is a pure wrapper over the `@quonfig/javascript` client, so this is a
@@ -12,8 +12,8 @@ Changelog
   rejection, and `close()` (called on provider unmount) leaving a timer armed. The new `telemetry*`
   options are available on the underlying client's `init()`; no new provider props and no API change
   in this package.
-- Bumps the `@quonfig/javascript` peer + dev dependency to `^1.3.0` (lands with the release, once
-  1.3.0 is on npm).
+- Requires `@quonfig/javascript` `^1.3.0`: the peer + dev dependency is bumped to `^1.3.0` (from
+  `^1.2.0`) so the inherited telemetry transport changes above are guaranteed at runtime.
 
 ## 1.2.0 - 2026-07-08
 
