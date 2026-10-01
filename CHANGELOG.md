@@ -1,5 +1,14 @@
 Changelog
 
+## Unreleased
+
+- **Fix: `QuonfigTestProvider`'s `getDuration` validates like the real client (qfg-2agi.14).** It
+  returned `config[key]` unchanged, so a test passing `"PT30S"` got a string back and tests never
+  exercised the duration parser. An ISO 8601 string is now parsed by `@quonfig/javascript`'s own
+  parser, a `{ms, seconds}` Duration passes through, and any other value returns `undefined` with a
+  `console.warn`. The grammar fixes in `@quonfig/javascript` (day components, rejecting
+  out-of-grammar strings) reach this provider once its `@quonfig/javascript` dependency is bumped.
+
 ## 1.3.0 - 2026-09-25
 
 - **Inherits the telemetry transport policy from `@quonfig/javascript` 1.3.0 (qfg-y8je.11).**
