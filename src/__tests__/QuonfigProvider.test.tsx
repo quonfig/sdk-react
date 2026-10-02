@@ -270,6 +270,60 @@ describe("QuonfigProvider", () => {
     expect(secretFeature).toBeInTheDocument();
   });
 
+  // qfg-sdr4: the initialFlags (SSR hydration) path never calls init(), so the
+  // client has no loader. A later contextAttributes change used to route to
+  // updateContext(), which throws "Quonfig not initialized" -> onError, and the
+  // flags were never refetched for the new context.
+  it("loads flags for a new context after hydrating from initialFlags", async () => {
+    let setContextAttributes: (attributes: Contexts) => void = () => {};
+    const onError = jest.fn();
+
+    const fetchMock = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: () => ({
+          evaluations: {
+            greeting: { value: { type: "string", value: "FETCHED FOR NEW CONTEXT" } },
+          },
+        }),
+      })
+    ) as jest.Mock;
+    global.fetch = fetchMock;
+
+    function Wrapper({ context }: { context: Contexts }) {
+      const [contextAttributes, innerSetContextAttributes] = React.useState(context);
+      setContextAttributes = innerSetContextAttributes;
+
+      return (
+        <QuonfigProvider
+          sdkKey="sdk-key"
+          contextAttributes={contextAttributes}
+          onError={onError}
+          initialFlags={{ greeting: "My seeded greeting" }}
+        >
+          <MyComponent />
+        </QuonfigProvider>
+      );
+    }
+
+    render(<Wrapper context={{ user: { email: "test@example.com" } }} />);
+
+    expect(screen.queryByRole("alert")).toHaveTextContent("My seeded greeting");
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    act(() => {
+      setContextAttributes({ user: { email: "foo@example.com" } });
+    });
+
+    await waitFor(() =>
+      expect(screen.queryByRole("alert")).toHaveTextContent("FETCHED FOR NEW CONTEXT")
+    );
+    expect(fetchMock).toHaveBeenCalled();
+    expect(onError).not.toHaveBeenCalled();
+  });
+
   it("allows providing an afterEvaluationCallback", async () => {
     const context = { user: { email: "test@example.com" } };
 

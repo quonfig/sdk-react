@@ -2,6 +2,11 @@ Changelog
 
 ## Unreleased
 
+- **Fix: changing `contextAttributes` after SSR hydration now loads flags (qfg-sdr4).** A
+  `QuonfigProvider` rendered with `initialFlags` seeds the client via `hydrate()` without calling
+  `init()`, so a later `contextAttributes` change went to `updateContext()`, which threw
+  `Quonfig not initialized. Call init() first.` into `onError` and never refetched. The provider now
+  runs a full `init()` for the new context when the client was only hydrated.
 - **Fix: `QuonfigTestProvider`'s `getDuration` validates like the real client (qfg-2agi.14).** It
   returned `config[key]` unchanged, so a test passing `"PT30S"` got a string back and tests never
   exercised the duration parser. An ISO 8601 string is now parsed by `@quonfig/javascript`'s own

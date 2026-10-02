@@ -236,6 +236,11 @@ function QuonfigProvider({
   // We use this state to prevent a double-init when useEffect fires due to
   // StrictMode
   const mostRecentlyLoadingContextKey = React.useRef<string | undefined>(undefined);
+  // qfg-sdr4: whether this provider has called init() on the client. The
+  // initialFlags (SSR hydration) path seeds the client via hydrate() without
+  // init(), so the client has no loader and updateContext() would throw
+  // "Quonfig not initialized". A context change in that state needs a full init.
+  const hasInitialized = React.useRef(false);
   // We use this state to pass the loading state to the Provider (updating
   // currentLoadingContextKey won't trigger an update)
   const [loading, setLoading] = React.useState(true);
@@ -278,8 +283,9 @@ function QuonfigProvider({
 
     setLoading(true);
     try {
-      if (mostRecentlyLoadingContextKey.current === undefined) {
+      if (mostRecentlyLoadingContextKey.current === undefined || !hasInitialized.current) {
         mostRecentlyLoadingContextKey.current = contextKey;
+        hasInitialized.current = true;
 
         if (!sdkKey) {
           throw new Error("QuonfigProvider: sdkKey is required");
@@ -360,6 +366,7 @@ function QuonfigProvider({
     () => () => {
       quonfigClient.close().catch(() => {});
       mostRecentlyLoadingContextKey.current = undefined;
+      hasInitialized.current = false;
     },
     [quonfigClient]
   );
