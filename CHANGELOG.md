@@ -1,6 +1,6 @@
 Changelog
 
-## Unreleased
+## 1.3.1 - 2026-10-03
 
 - **Fix: changing `contextAttributes` after SSR hydration now loads flags (qfg-sdr4).** A
   `QuonfigProvider` rendered with `initialFlags` seeds the client via `hydrate()` without calling
