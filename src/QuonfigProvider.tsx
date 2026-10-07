@@ -159,11 +159,22 @@ export function useFlag(key: string): ConfigValue {
 // React tree?". If yes, mint a fresh client (multi-tenant nesting); if no,
 // claim the module singleton so non-React code that imports `quonfig`
 // directly sees the same instance.
+//
+// qfg-goi1.2.1: on the server every provider gets a fresh client. The module
+// singleton is shared by every request in the process, so seeding it with one
+// request's `initialFlags` could render that user's values into another
+// user's HTML. A fresh client starts empty, so `hydrate(initialFlags)` holds
+// exactly this request's flags. The check is `typeof window`, not React's
+// `canUseDOM` (`window.document`): React Native has `window` but no
+// `document`, and must keep sharing the singleton.
 export const useQuonfigClient = (): Quonfig => {
   const parentClient = React.useContext(QuonfigClientContext);
   // Mount-only: parent context is fixed for the lifetime of this provider.
   const parentClientRef = React.useRef(parentClient);
-  return React.useMemo(() => (parentClientRef.current ? new Quonfig() : quonfig), []);
+  return React.useMemo(
+    () => (parentClientRef.current || typeof window === "undefined" ? new Quonfig() : quonfig),
+    []
+  );
 };
 
 export type QuonfigProviderProps = SharedSettings & {

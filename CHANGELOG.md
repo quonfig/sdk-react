@@ -2,7 +2,20 @@ Changelog
 
 ## Unreleased
 
-Recommended semver: patch.
+Recommended semver: minor (the SSR isolation fix below changes server-render behavior; Decision 1).
+
+- **Fix: server rendering no longer uses the process-wide `quonfig` singleton (qfg-goi1.2.1).** A
+  `QuonfigProvider` rendered on the server (including a `"use client"` component's first HTML)
+  claimed the `@quonfig/javascript` module singleton and `hydrate()`d its `initialFlags` into it.
+  Every request in the process shares that object, so one user's flag values could render in another
+  user's HTML: with sequential renders whose `initialFlags` have different keys, and with
+  streaming/Suspense renders even when the keys match. On the server
+  (`typeof window === "undefined"`), every provider now gets its own `Quonfig()` client seeded only
+  from its `initialFlags`; the server render no longer reads or writes the module singleton. Browser
+  and React Native behavior is unchanged (the top-level provider still claims the singleton). The
+  README's claim that the provider "does not run during SSR" is corrected, and the docs now build
+  `initialFlags` with a per-request `new Quonfig()` instead of `init()` + `extract()` on the shared
+  singleton.
 
 - **Fix: the reported `clientVersion` now matches the package version (qfg-goi1.1.7).**
   `src/version.ts` is generated from `package.json`, but the generator ran from a `prebuild` hook,

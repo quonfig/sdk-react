@@ -192,11 +192,27 @@ export default function Page({ initialFlags }) {
 
 ## SSR / multi-tenant rendering
 
-`QuonfigProvider` is a client-only component (it uses `useEffect` and `fetch`), so it does not run
-during SSR. The provider's client identity is keyed by React tree position via
+`QuonfigProvider` does render on the server: a `"use client"` component is still server-rendered for
+the first HTML. On the server (`typeof window === "undefined"`), every provider gets its own
+`Quonfig()` client, seeded only from that render's `initialFlags`. It never reads or writes the
+module singleton there, so one request's flags cannot appear in another request's HTML. The server
+render runs no effects, so it does no fetching and no polling.
+
+In the browser, the provider's client identity is keyed by React tree position via
 `QuonfigClientContext`: a top-level provider claims the module singleton (so `import { quonfig }`
 consumers see the same instance), and any nested `QuonfigProvider` mints a fresh `Quonfig()` so its
 config can't leak into the parent tree.
+
+To build `initialFlags` on the server, use a new client per request rather than the shared `quonfig`
+singleton. Concurrent requests that `init()` the singleton can overwrite each other's flags:
+
+```typescript
+import { Quonfig } from "@quonfig/javascript";
+
+const client = new Quonfig();
+await client.init({ sdkKey, context, collectEvaluationSummaries: false });
+const initialFlags = client.extract();
+```
 
 ## Usage in your test suite
 
