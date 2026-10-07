@@ -38,6 +38,14 @@ Recommended semver: minor (the SSR isolation fix below changes server-render beh
   loop. The provider now skips `poll()` and its state updates once it has unmounted.
 - Docs: the README says to mount one top-level `QuonfigProvider` per page, because sibling top-level
   providers (including separate React roots) share the module singleton (qfg-goi1.2.8).
+- **Fix: `useFlag(key)` returns the `initialFlags` value in the server render and during hydration
+  (qfg-goi1.2.9).** `useFlag`'s server snapshot was always `undefined`, and React uses that snapshot
+  on the server and in the client's hydration pass. So with `initialFlags` set, `useFlag` rendered
+  the default into the SSR HTML and the first paint, then switched to the real value after
+  hydration: the flicker `initialFlags` exists to prevent. `useFlag` now serves the value from the
+  nearest provider's `initialFlags` there (a key not in `initialFlags` still gives `undefined`). The
+  server and the client read the same `initialFlags`, so there is no hydration mismatch. Behavior
+  change on a common path, approved as a minor (Jeff, 2026-10-07).
 
 ## 1.3.1 - 2026-10-03
 

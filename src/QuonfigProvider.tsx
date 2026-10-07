@@ -21,6 +21,13 @@ import { normalizeLogger, type Logger, type NormalizedLogger } from "./sdkLogger
 // state across test runs and (in principle) across SSR render trees.
 const QuonfigClientContext = React.createContext<Quonfig | null>(null);
 
+// qfg-goi1.2.9: the `initialFlags` this provider was mounted with, for
+// useFlag's server snapshot. Every provider sets it (undefined when it has no
+// initialFlags), so a nested provider never serves its parent's flags.
+const QuonfigInitialFlagsContext = React.createContext<Record<string, unknown> | undefined>(
+  undefined
+);
+
 // @quonfig/cli#generate will create interfaces into this namespace for React to consume
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface FrontEndConfigurationAccessor {}
@@ -150,7 +157,16 @@ export function useFlag(key: string): ConfigValue {
     [client]
   );
   const getSnapshot = React.useCallback(() => client.get(key), [client, key]);
-  const getServerSnapshot = React.useCallback((): ConfigValue => undefined, []);
+  // qfg-goi1.2.9: React uses this on the server and during client hydration.
+  // Serve the provider's initialFlags, which are identical on both sides by
+  // construction, so the first paint shows the real value without a hydration
+  // mismatch. Never read the client here: in the browser it is the singleton,
+  // which may already hold values the server did not render.
+  const initialFlags = React.useContext(QuonfigInitialFlagsContext);
+  const getServerSnapshot = React.useCallback(
+    (): ConfigValue => initialFlags?.[key] as ConfigValue,
+    [initialFlags, key]
+  );
   return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
@@ -268,6 +284,10 @@ function QuonfigProvider({
   const [loadedContextKey, setLoadedContextKey] = React.useState("");
 
   const quonfigClient: Quonfig = useQuonfigClient();
+  // qfg-goi1.2.9: initialFlags is applied once, on the first render, so the
+  // server snapshot keeps that first value. Holding it in state also keeps the
+  // context value stable when a parent passes a new object every render.
+  const [serverSnapshotFlags] = React.useState(initialFlags);
 
   // qfg-daxq: re-render when the underlying client's in-memory config changes
   // (poll fetch, setConfig, hydrate). Without this the singleton mutates in
@@ -431,7 +451,9 @@ function QuonfigProvider({
 
   return (
     <QuonfigClientContext.Provider value={quonfigClient}>
-      <QuonfigContext.Provider value={value}>{children}</QuonfigContext.Provider>
+      <QuonfigInitialFlagsContext.Provider value={serverSnapshotFlags}>
+        <QuonfigContext.Provider value={value}>{children}</QuonfigContext.Provider>
+      </QuonfigInitialFlagsContext.Provider>
     </QuonfigClientContext.Provider>
   );
 }
