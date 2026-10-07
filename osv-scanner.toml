@@ -1,0 +1,17 @@
+# Dependency-scan ignores for the SSDLC deps check (quonfig/ci, qfg-66ko.3).
+# Every entry needs a reason; past ignoreUntil it is enforced again.
+
+[[IgnoredVulns]]
+id = "GHSA-vfj7-8cjw-p6xm"
+ignoreUntil = 2027-01-07
+reason = "braces <=3.0.3 stack-exhaustion DoS, no fixed release yet. Dev/test/build tooling only (micromatch under jest/eslint); patterns come from repo config, not untrusted input. Tracked in qfg-66ko.8."
+
+[[IgnoredVulns]]
+id = "GHSA-ch52-4w7c-c8xp"
+ignoreUntil = 2027-01-07
+reason = "http-cache-semantics <=4.2.0 shared-cache max-stale disclosure, no fixed release yet. Only pulled in by npm-registry and native-build tooling (make-fetch-happen under node-gyp/pacote); no shared multi-user HTTP cache. Tracked in qfg-66ko.8."
+
+[[IgnoredVulns]]
+id = "GHSA-w5hq-g745-h8pq"
+ignoreUntil = 2027-01-31
+reason = "uuid v3/v5/v6 buffer bounds check. @quonfig/javascript only calls v4() (src/quonfig.ts), never v3/v5/v6 with a caller buffer. Fix is a runtime major bump (uuid 11+), tracked in qfg-66ko.6."
