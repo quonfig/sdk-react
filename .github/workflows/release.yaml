@@ -50,7 +50,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - name: Enable corepack (yarn 4)
         run: corepack enable
-      - run: yarn install --no-immutable
+      - run: yarn install --immutable
       - run: yarn build
       - name: Get npm publish token via OIDC
         id: npm-token

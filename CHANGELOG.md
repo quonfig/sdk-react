@@ -1,5 +1,18 @@
 Changelog
 
+## Unreleased
+
+Recommended semver: patch.
+
+- **Fix: the reported `clientVersion` now matches the package version (qfg-goi1.1.7).**
+  `src/version.ts` is generated from `package.json`, but the generator ran from a `prebuild` hook,
+  and Yarn 4 does not run `pre*` scripts. So 1.3.0 and 1.3.1 both shipped stamped `"1.3.0"`, and
+  telemetry from 1.3.1 was misattributed to 1.3.0. `yarn build` now runs
+  `scripts/generate-version.mjs` itself, and a test asserts `src/version.ts` equals the
+  `package.json` version.
+- CI: the release workflow installs with `yarn install --immutable`. `test.yml` keeps
+  `--no-immutable` (with a comment) because its React 18/19 matrix step rewrites `package.json`.
+
 ## 1.3.1 - 2026-10-03
 
 - **Fix: changing `contextAttributes` after SSR hydration now loads flags (qfg-sdr4).** A

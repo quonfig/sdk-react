@@ -32,8 +32,7 @@
     "node": ">=20.9.0"
   },
   "scripts": {
-    "prebuild": "node scripts/generate-version.mjs",
-    "build": "rm -rf dist/ && tsup",
+    "build": "node scripts/generate-version.mjs && rm -rf dist/ && tsup",
     "dev": "tsup --watch",
     "bundle": "esbuild --minify --target=esnext --bundle --outfile=dist/quonfig-react.bundle.js --global-name=window.quonfigReactNamespace dist/index.cjs && echo 'window.quonfigReact = window.quonfigReactNamespace.quonfigReact' >> dist/quonfig-react.bundle.js",
     "test": "tsup && jest --verbose",

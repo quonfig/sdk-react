@@ -68,6 +68,9 @@ jobs:
             fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
           "
 
+      # --no-immutable is deliberate here: "Pin matrix React" above rewrites
+      # package.json, so yarn.lock must be allowed to change. Every other
+      # install (lint job, release.yaml) uses --immutable.
       - name: Install modules
         run: yarn install --no-immutable
 
