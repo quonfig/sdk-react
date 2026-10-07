@@ -382,12 +382,34 @@ function QuonfigProvider({
     [quonfigClient]
   );
 
+  // qfg-goi1.2.8: the client's getDuration throws when the stored value is not
+  // a duration, and this hook runs during render, so one config edit could
+  // unmount the whole tree. Return undefined (the default) instead and warn
+  // once per key. Not routed through onError, which would fire every render.
+  // The raw client (`useQuonfig().quonfig.getDuration`) still throws.
+  const durationWarnedKeys = React.useRef(new Set<string>());
+  const getDuration = React.useCallback(
+    (key: string): Duration | undefined => {
+      try {
+        return quonfigClient.getDuration(key);
+      } catch (e) {
+        if (!durationWarnedKeys.current.has(key)) {
+          durationWarnedKeys.current.add(key);
+          const message = e instanceof Error ? e.message : String(e);
+          normalizedLogger.warn(`QuonfigProvider: ${message}; returning undefined.`);
+        }
+        return undefined;
+      }
+    },
+    [quonfigClient, normalizedLogger]
+  );
+
   const value = React.useMemo(() => {
     const baseContext: ProvidedContext = {
       isEnabled: quonfigClient.isEnabled.bind(quonfigClient),
       contextAttributes,
       get: quonfigClient.get.bind(quonfigClient),
-      getDuration: quonfigClient.getDuration.bind(quonfigClient),
+      getDuration,
       keys: Object.keys(quonfigClient.extract()),
       quonfig: quonfigClient,
       loading,
@@ -395,7 +417,7 @@ function QuonfigProvider({
     };
 
     return baseContext;
-  }, [loadedContextKey, loading, quonfigClient.instanceHash, settings, dataVersion]);
+  }, [loadedContextKey, loading, quonfigClient.instanceHash, settings, dataVersion, getDuration]);
 
   return (
     <QuonfigClientContext.Provider value={quonfigClient}>

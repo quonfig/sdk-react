@@ -26,6 +26,13 @@ Recommended semver: minor (the SSR isolation fix below changes server-render beh
 - CI: the release workflow installs with `yarn install --immutable`. `test.yml` keeps
   `--no-immutable` (with a comment) because its React 18/19 matrix step rewrites `package.json`.
 
+- **Fix: `useQuonfig().getDuration` no longer crashes the render on a non-duration value
+  (qfg-goi1.2.8).** The provider passed `@quonfig/javascript`'s `getDuration` through unwrapped, and
+  it throws `Value for key "<key>" is not a duration` when the stored value is a bool, number or
+  string. Because the hook runs during render, one config edit could unmount the whole React tree.
+  The provider now returns `undefined` (the default) and warns once per key through its logger,
+  matching `QuonfigTestProvider`. The raw client (`useQuonfig().quonfig.getDuration`) still throws.
+
 ## 1.3.1 - 2026-10-03
 
 - **Fix: changing `contextAttributes` after SSR hydration now loads flags (qfg-sdr4).** A
