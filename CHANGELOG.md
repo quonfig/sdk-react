@@ -36,6 +36,8 @@ Recommended semver: minor (the SSR isolation fix below changes server-render beh
   (qfg-goi1.2.8).** With `pollInterval` set, an `init()` that resolved after the provider unmounted
   still called `poll()` on the client the unmount had already closed, and nothing ever stopped that
   loop. The provider now skips `poll()` and its state updates once it has unmounted.
+- Docs: the README says to mount one top-level `QuonfigProvider` per page, because sibling top-level
+  providers (including separate React roots) share the module singleton (qfg-goi1.2.8).
 
 ## 1.3.1 - 2026-10-03
 

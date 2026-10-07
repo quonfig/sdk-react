@@ -201,7 +201,10 @@ render runs no effects, so it does no fetching and no polling.
 In the browser, the provider's client identity is keyed by React tree position via
 `QuonfigClientContext`: a top-level provider claims the module singleton (so `import { quonfig }`
 consumers see the same instance), and any nested `QuonfigProvider` mints a fresh `Quonfig()` so its
-config can't leak into the parent tree.
+config can't leak into the parent tree. Mount one top-level provider per page: sibling top-level
+providers (including ones in separate React roots) share that one singleton, so the last to load
+sets the context for all of them and unmounting any of them stops polling for the rest; nest a
+provider when you need an independent client.
 
 To build `initialFlags` on the server, use a new client per request rather than the shared `quonfig`
 singleton. Concurrent requests that `init()` the singleton can overwrite each other's flags:
