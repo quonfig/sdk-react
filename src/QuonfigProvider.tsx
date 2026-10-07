@@ -252,6 +252,13 @@ function QuonfigProvider({
   // init(), so the client has no loader and updateContext() would throw
   // "Quonfig not initialized". A context change in that state needs a full init.
   const hasInitialized = React.useRef(false);
+  // qfg-goi1.2.8: whether this provider is mounted. Set in the mount-only
+  // effect below. An init() that resolves after unmount must not start a
+  // poller (nothing would ever stop it) or set state. This is a mount-level
+  // ref on purpose: an effect-local `cancelled` flag in the init effect would
+  // cancel every init, because that effect's deps include `loading`, which it
+  // toggles itself.
+  const isMounted = React.useRef(false);
   // We use this state to pass the loading state to the Provider (updating
   // currentLoadingContextKey won't trigger an update)
   const [loading, setLoading] = React.useState(true);
@@ -321,6 +328,7 @@ function QuonfigProvider({
         quonfigClient
           .init(initOptions)
           .then(() => {
+            if (!isMounted.current) return;
             setLoadedContextKey(contextKey);
             setLoading(false);
 
@@ -337,7 +345,7 @@ function QuonfigProvider({
             }
           })
           .catch((reason: any) => {
-            setLoading(false);
+            if (isMounted.current) setLoading(false);
             onError(reason);
           });
       } else {
@@ -346,11 +354,12 @@ function QuonfigProvider({
         quonfigClient
           .updateContext(contextAttributes)
           .then(() => {
+            if (!isMounted.current) return;
             setLoadedContextKey(contextKey);
             setLoading(false);
           })
           .catch((reason: any) => {
-            setLoading(false);
+            if (isMounted.current) setLoading(false);
             onError(reason);
           });
       }
@@ -373,14 +382,15 @@ function QuonfigProvider({
   // forever. Mount-only deps so context-attribute changes don't tear down
   // the SDK. In React StrictMode the synthetic unmount fires too — we
   // reset the init-guard ref so the next mount cleanly re-inits.
-  React.useEffect(
-    () => () => {
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
       quonfigClient.close().catch(() => {});
       mostRecentlyLoadingContextKey.current = undefined;
       hasInitialized.current = false;
-    },
-    [quonfigClient]
-  );
+    };
+  }, [quonfigClient]);
 
   // qfg-goi1.2.8: the client's getDuration throws when the stored value is not
   // a duration, and this hook runs during render, so one config edit could

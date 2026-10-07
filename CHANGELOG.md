@@ -32,6 +32,10 @@ Recommended semver: minor (the SSR isolation fix below changes server-render beh
   string. Because the hook runs during render, one config edit could unmount the whole React tree.
   The provider now returns `undefined` (the default) and warns once per key through its logger,
   matching `QuonfigTestProvider`. The raw client (`useQuonfig().quonfig.getDuration`) still throws.
+- **Fix: unmounting a provider while `init()` is in flight no longer leaks a poller
+  (qfg-goi1.2.8).** With `pollInterval` set, an `init()` that resolved after the provider unmounted
+  still called `poll()` on the client the unmount had already closed, and nothing ever stopped that
+  loop. The provider now skips `poll()` and its state updates once it has unmounted.
 
 ## 1.3.1 - 2026-10-03
 

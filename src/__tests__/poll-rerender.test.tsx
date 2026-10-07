@@ -132,3 +132,99 @@ describe("QuonfigProvider tears down on unmount (qfg-2acr)", () => {
     closeSpy.mockRestore();
   });
 });
+
+describe("QuonfigProvider unmounted during init (qfg-goi1.2.8)", () => {
+  it("does not start polling when init resolves after unmount", async () => {
+    let releaseFirstFetch!: () => void;
+    const firstFetchGate = new Promise<void>((resolve) => {
+      releaseFirstFetch = resolve;
+    });
+    const response = {
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: () => ({ evaluations: {} }),
+    };
+    let calls = 0;
+    global.fetch = jest.fn(() => {
+      calls += 1;
+      // Hold the init fetch open so the provider unmounts mid-init; any later
+      // fetch (a poll) resolves immediately.
+      return calls === 1 ? firstFetchGate.then(() => response) : Promise.resolve(response);
+    }) as jest.Mock;
+
+    let client: Quonfig | undefined;
+
+    const { unmount } = render(
+      <QuonfigProvider
+        sdkKey="sdk-key"
+        contextAttributes={{ user: { email: "test@example.com" } }}
+        pollInterval={20}
+        onError={() => {}}
+      >
+        <CapturingChild
+          capture={(q) => {
+            client = q;
+          }}
+        />
+      </QuonfigProvider>
+    );
+    expect(client).toBeDefined();
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      unmount();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      releaseFirstFetch();
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+    const fetchesAfterInit = (global.fetch as jest.Mock).mock.calls.length;
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
+
+    expect({
+      pollStatus: client!.pollStatus.status,
+      fetchesSinceInit: (global.fetch as jest.Mock).mock.calls.length - fetchesAfterInit,
+    }).toEqual({ pollStatus: "stopped", fetchesSinceInit: 0 });
+    client!.stopPolling();
+  });
+});
+
+describe("QuonfigProvider under StrictMode (qfg-goi1.2.8)", () => {
+  it("still loads and starts polling after the synthetic unmount/remount", async () => {
+    stubFetch({ greeting: { value: { type: "string", value: "STRICT" } } });
+
+    let client: Quonfig | undefined;
+
+    const { unmount } = render(
+      <React.StrictMode>
+        <QuonfigProvider
+          sdkKey="sdk-key"
+          contextAttributes={{ user: { email: "test@example.com" } }}
+          pollInterval={20}
+          onError={() => {}}
+        >
+          <CapturingChild
+            capture={(q) => {
+              client = q;
+            }}
+          />
+        </QuonfigProvider>
+      </React.StrictMode>
+    );
+
+    await waitFor(() => expect(screen.getByTestId("state")).toHaveTextContent("STRICT"));
+    await waitFor(() => expect(client!.pollStatus.status).toBe("running"));
+
+    await act(async () => {
+      unmount();
+      await Promise.resolve();
+    });
+    expect(client!.pollStatus.status).toBe("stopped");
+  });
+});
