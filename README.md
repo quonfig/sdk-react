@@ -4,9 +4,14 @@ A React provider and hook for [Quonfig](https://quonfig.com)
 
 ## Installation
 
-`npm install @quonfig/react` or `yarn add @quonfig/react`
+```bash
+npm install @quonfig/react @quonfig/javascript
+# or
+yarn add @quonfig/react @quonfig/javascript
+```
 
-TypeScript types are included with the package.
+`@quonfig/javascript` is a peer dependency. npm 7+ installs peers for you, but Yarn does not, so
+list it explicitly. TypeScript types are included with the package.
 
 ## Usage in your app
 

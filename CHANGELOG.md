@@ -1,8 +1,13 @@
 Changelog
 
-## Unreleased
+## 1.4.0 - 2026-10-09
 
-Recommended semver: minor (the SSR isolation fix below changes server-render behavior; Decision 1).
+- Requires `@quonfig/javascript` `^1.4.0`: the peer + dev dependency floor moves from `^1.3.0`, so
+  the provider is guaranteed the 1.4.0 client fixes at runtime: context-switch race fixes, poll and
+  `init()` hardening, and a bounded last-known-good cache.
+- Docs: the README install commands now include the `@quonfig/javascript` peer, which Yarn does not
+  auto-install (npm 7+ does), so a Yarn user no longer hits
+  `Unable to resolve module @quonfig/javascript` (qfg-goi1.2.24). A test keeps it there.
 
 - **Fix: server rendering no longer uses the process-wide `quonfig` singleton (qfg-goi1.2.1).** A
   `QuonfigProvider` rendered on the server (including a `"use client"` component's first HTML)
