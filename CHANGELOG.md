@@ -1,5 +1,12 @@
 Changelog
 
+## 1.5.1 - 2026-10-16
+
+- Requires `@quonfig/javascript` `^1.5.1` (peer + dev floor moves from `^1.5.0`). 1.5.1 stops
+  eval-summary telemetry from serializing the selected value on every read (qfg-23uf), a 1.5.0
+  regression of about 1500x per read on a 60KB JSON config. Every flag read from the hooks goes
+  through that path while evaluation summaries are on, which is the default.
+
 ## 1.5.0 - 2026-10-16
 
 > **UPGRADE:** inherited from `@quonfig/javascript` 1.5.0: after a fetch cycle rejected with
