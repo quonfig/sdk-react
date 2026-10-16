@@ -1,2 +1,2 @@
 // AUTO-GENERATED from package.json by scripts/generate-version.mjs — do not edit.
-export default "1.4.0";
+export default "1.5.0";
