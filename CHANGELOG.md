@@ -1,5 +1,23 @@
 Changelog
 
+## 1.5.0 - 2026-10-16
+
+> **UPGRADE:** inherited from `@quonfig/javascript` 1.5.0: after a fetch cycle rejected with
+> 401/403/404/410, retry cadence and log levels change, and a revoked key logs one config ERROR.
+
+- Requires `@quonfig/javascript` `^1.5.0`: the peer + dev dependency floor moves from `^1.4.0`, so
+  the provider gets these 1.5.0 client changes at runtime:
+  - **Invalid or revoked SDK key (qfg-goi1.10.29).** A poll cycle whose primary answers 401, 403,
+    404 or 410 on every leg logs one `console.error` (status and host, never the key) and polls
+    every 150-300s until the first 200/304, then returns to `frequencyInMs`. `init()` and
+    `updateContext()` are unaffected; the last-known-good copy is still served.
+  - **Eval-summary telemetry keeps a counter per evaluated value.** Counters were keyed by config
+    key and type, so a mid-window value or rule change was counted under the first value seen. They
+    are now keyed by config id, rule, weighted value and selected value, as in the other SDKs.
+  - Overlapping `init()` calls install only the newer context (qfg-goi1.10.12), and `stale` clears
+    when the network recovers at the same generation.
+- No change to this package's own API or behavior.
+
 ## 1.4.0 - 2026-10-09
 
 - Requires `@quonfig/javascript` `^1.4.0`: the peer + dev dependency floor moves from `^1.3.0`, so
