@@ -42,6 +42,26 @@ type ClassMethods<T> = { [K in keyof T]: T[K] };
 
 type QuonfigTypesafeClass<T = unknown> = new (quonfig: Quonfig) => T;
 
+/**
+ * What `init()` does when no Quonfig config is available by `initTimeout`.
+ * Mirrors `OnInitFailure` in @quonfig/javascript (declared here so the
+ * provider also type-checks against an older client that lacks it).
+ *
+ * - `"fail"` (the client's default): `init()` rejects; `useQuonfig().error`
+ *   holds the error and the client keeps retrying in the background.
+ * - `"wait"`: `init()` stays pending (`loading` stays true) until config arrives.
+ * - `"continue"`: `init()` resolves on code defaults (`isReady` false).
+ */
+export type OnInitFailure = "fail" | "wait" | "continue";
+
+/**
+ * Where the values the hooks serve come from right now.
+ * - `"network"`: live config from delivery (or SSR `initialFlags`).
+ * - `"cache"`: the last-known-good copy from an earlier visit.
+ * - `"defaults"`: no config at all; every read returns the code default.
+ */
+export type QuonfigSource = "network" | "cache" | "defaults";
+
 type SharedSettings = Partial<
   Pick<
     InitOptions,
@@ -59,6 +79,14 @@ type SharedSettings = Partial<
   ) => void;
   pollInterval?: number;
   onError?: (error: Error) => void;
+  /** See {@link OnInitFailure}. Unset: the client's default (`"fail"`). */
+  onInitFailure?: OnInitFailure;
+  /**
+   * Overall deadline (ms) for `init()` to obtain config before
+   * `onInitFailure` applies. Unset: the client's default (5000). Separate from
+   * the per-leg `timeout`.
+   */
+  initTimeout?: number;
 };
 
 export type BaseContext = {
@@ -87,6 +115,17 @@ export type BaseContext = {
     key: K
   ) => boolean;
   loading: boolean;
+  /**
+   * True while the hooks serve live config: a network answer for the current
+   * context, or SSR `initialFlags`. False before the first answer, while
+   * serving a cached copy or code defaults, and after a failed init until the
+   * client heals.
+   */
+  isReady: boolean;
+  /** The error the latest `init()` rejected with; undefined once ready. */
+  error: Error | undefined;
+  /** See {@link QuonfigSource}. */
+  source: QuonfigSource;
   quonfig: typeof quonfig;
   keys: (keyof TypedFrontEndConfigurationRaw)[];
   settings: SharedSettings;
@@ -100,6 +139,9 @@ export const defaultContext: BaseContext = {
   isEnabled: (_key) => false,
   keys: [],
   loading: true,
+  isReady: false,
+  error: undefined,
+  source: "defaults",
   contextAttributes: {},
   quonfig,
   settings: {},
@@ -124,6 +166,9 @@ export function createQuonfigHook<T>(TypesafeClass: QuonfigTypesafeClass<T>) {
         contextAttributes: baseContext.contextAttributes,
         isEnabled: baseContext.isEnabled,
         loading: baseContext.loading,
+        isReady: baseContext.isReady,
+        error: baseContext.error,
+        source: baseContext.source,
         keys: baseContext.keys,
         settings: baseContext.settings,
       });
@@ -200,6 +245,8 @@ export type QuonfigProviderProps = SharedSettings & {
   logger?: Logger;
 };
 
+const returnFalse = () => false;
+
 const getContextKey = (
   contextAttributes: Contexts,
   logger: NormalizedLogger,
@@ -234,6 +281,8 @@ function QuonfigProvider({
   pollInterval,
   afterEvaluationCallback = undefined,
   collectEvaluationSummaries,
+  onInitFailure,
+  initTimeout,
 }: PropsWithChildren<QuonfigProviderProps>) {
   const normalizedLogger = React.useMemo(() => normalizeLogger(logger), [logger]);
   const onError = React.useCallback(
@@ -258,6 +307,8 @@ function QuonfigProvider({
     onError,
     afterEvaluationCallback,
     collectEvaluationSummaries,
+    onInitFailure,
+    initTimeout,
   };
 
   // We use this state to prevent a double-init when useEffect fires due to
@@ -282,6 +333,17 @@ function QuonfigProvider({
   // Here we track the current identity so we can reload our config when it
   // changes
   const [loadedContextKey, setLoadedContextKey] = React.useState("");
+  // qfg-9p4i.11: readiness. `initError` is what the latest init() rejected
+  // with. `failedAtDataVersion` (the client's dataVersion when init failed)
+  // drives the readiness fallback for a client without isReady()
+  // (@quonfig/javascript < 1.6): a later install means a poll healed it.
+  const [initError, setInitError] = React.useState<Error | undefined>(undefined);
+  const [failedAtDataVersion, setFailedAtDataVersion] = React.useState<number>();
+  const initFailed = (reason: unknown) => {
+    setInitError(reason as Error);
+    setFailedAtDataVersion(quonfigClient.dataVersion);
+    setLoading(false);
+  };
 
   const quonfigClient: Quonfig = useQuonfigClient();
   // qfg-goi1.2.9: initialFlags is applied once, on the first render, so the
@@ -296,6 +358,27 @@ function QuonfigProvider({
     React.useCallback((onChange) => quonfigClient.subscribe(onChange), [quonfigClient]),
     React.useCallback(() => quonfigClient.dataVersion, [quonfigClient]),
     React.useCallback(() => 0, [])
+  );
+
+  // qfg-9p4i.11: the client notifies subscribers when readiness or staleness
+  // changes without a new install, so read both through the same store.
+  const subscribeToClient = React.useCallback(
+    (onChange: () => void) => quonfigClient.subscribe(onChange),
+    [quonfigClient]
+  );
+  // undefined: the client has no isReady() (@quonfig/javascript < 1.6).
+  const nativeReady = React.useSyncExternalStore(
+    subscribeToClient,
+    React.useCallback(
+      () => (quonfigClient as unknown as { isReady?: () => boolean }).isReady?.(),
+      [quonfigClient]
+    ),
+    returnFalse
+  );
+  const stale = React.useSyncExternalStore(
+    subscribeToClient,
+    React.useCallback(() => quonfigClient.stale, [quonfigClient]),
+    returnFalse
   );
 
   const contextKey = getContextKey(contextAttributes, normalizedLogger, onError);
@@ -347,7 +430,12 @@ function QuonfigProvider({
           });
         };
 
-        const initOptions: InitOptions = {
+        // qfg-9p4i.11: onInitFailure / initTimeout pass through as given
+        // (undefined: the client's defaults, fail and 5s). Cast so this also
+        // builds against a client whose InitOptions predates them.
+        const initOptions = {
+          onInitFailure,
+          initTimeout,
           context: contextAttributes,
           sdkKey,
           apiUrls: resolvedApiUrls,
@@ -356,7 +444,7 @@ function QuonfigProvider({
           hedgeDelay,
           afterEvaluationCallback,
           collectEvaluationSummaries,
-        };
+        } as InitOptions;
 
         quonfigClient
           .init(initOptions)
@@ -368,7 +456,7 @@ function QuonfigProvider({
             startPolling();
           })
           .catch((reason: any) => {
-            if (isMounted.current) setLoading(false);
+            if (isMounted.current) initFailed(reason);
             onError(reason);
             // qfg-9p4i.5: a failed init must not leave the tab on defaults
             // forever. Start polling anyway (defaults / last-known-good are
@@ -391,7 +479,7 @@ function QuonfigProvider({
           });
       }
     } catch (e) {
-      setLoading(false);
+      initFailed(e);
       onError(e as Error);
     }
   }, [
@@ -441,6 +529,19 @@ function QuonfigProvider({
     [quonfigClient, normalizedLogger]
   );
 
+  // qfg-9p4i.11: readiness per spec B.4. With a client that has isReady()
+  // (@quonfig/javascript >= 1.6) it is the source of truth. Otherwise: ready
+  // once init() settled without failing, or once a poll installed config
+  // after a failed init; never while serving the stale cached copy.
+  const fallbackReady =
+    !loading && !stale && (failedAtDataVersion === undefined || dataVersion > failedAtDataVersion);
+  // SSR hydration via initialFlags counts as ready (like the client's SSR
+  // bootstrap) until this provider runs a real init().
+  const isReady =
+    (!!serverSnapshotFlags && !hasInitialized.current) || (nativeReady ?? fallbackReady);
+  const error = isReady ? undefined : initError;
+  const source: QuonfigSource = isReady ? "network" : stale ? "cache" : "defaults";
+
   const value = React.useMemo(() => {
     const baseContext: ProvidedContext = {
       isEnabled: quonfigClient.isEnabled.bind(quonfigClient),
@@ -450,11 +551,24 @@ function QuonfigProvider({
       keys: Object.keys(quonfigClient.extract()),
       quonfig: quonfigClient,
       loading,
+      isReady,
+      error,
+      source,
       settings,
     };
 
     return baseContext;
-  }, [loadedContextKey, loading, quonfigClient.instanceHash, settings, dataVersion, getDuration]);
+  }, [
+    loadedContextKey,
+    loading,
+    isReady,
+    error,
+    source,
+    quonfigClient.instanceHash,
+    settings,
+    dataVersion,
+    getDuration,
+  ]);
 
   return (
     <QuonfigClientContext.Provider value={quonfigClient}>

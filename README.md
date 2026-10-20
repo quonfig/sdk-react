@@ -42,15 +42,17 @@ const WrappedApp = () => {
 
 Here's an explanation of each provider prop:
 
-| property            | required | type                      | purpose                                                                                                     |
-| ------------------- | -------- | ------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `sdkKey`            | yes      | `string`                  | your Quonfig SDK key                                                                                        |
-| `onError`           | no       | `(error) => void`         | callback invoked if quonfig fails to initialize                                                             |
-| `contextAttributes` | no       | `Contexts`                | this is the context attributes object you passed when setting up the provider                               |
-| `timeout`           | no       | `number`                  | per-request fetch timeout in ms (defaults to ~3s). Keep it above `hedgeDelay` — see note below.             |
-| `hedgeDelay`        | no       | `number`                  | ms the hedged loader waits for the primary before also firing the secondary in parallel (defaults to ~2s).  |
-| `pollInterval`      | no       | `number`                  | configures quonfig to poll for updates every `pollInterval` ms.                                             |
-| `initialFlags`      | no       | `Record<string, unknown>` | seed flag values evaluated on the server — see [Next.js / RSC integration](#nextjs--rsc-integration) below. |
+| property            | required | type                             | purpose                                                                                                     |
+| ------------------- | -------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `sdkKey`            | yes      | `string`                         | your Quonfig SDK key                                                                                        |
+| `onError`           | no       | `(error) => void`                | callback invoked if quonfig fails to initialize                                                             |
+| `contextAttributes` | no       | `Contexts`                       | this is the context attributes object you passed when setting up the provider                               |
+| `timeout`           | no       | `number`                         | per-request fetch timeout in ms (defaults to ~3s). Keep it above `hedgeDelay` — see note below.             |
+| `hedgeDelay`        | no       | `number`                         | ms the hedged loader waits for the primary before also firing the secondary in parallel (defaults to ~2s).  |
+| `pollInterval`      | no       | `number`                         | configures quonfig to poll for updates every `pollInterval` ms.                                             |
+| `initialFlags`      | no       | `Record<string, unknown>`        | seed flag values evaluated on the server — see [Next.js / RSC integration](#nextjs--rsc-integration) below. |
+| `onInitFailure`     | no       | `"fail" \| "wait" \| "continue"` | what happens when no config is available by `initTimeout` — see [Startup failure](#startup-failure).        |
+| `initTimeout`       | no       | `number`                         | overall ms `init()` waits for config before `onInitFailure` applies (client default 5000).                  |
 
 > **`timeout` must stay above `hedgeDelay`.** The loader fires the primary URL first and, if it is
 > slow (no answer within `hedgeDelay`), also fires the secondary in parallel. If you set `timeout`
@@ -78,19 +80,45 @@ const Logo = () => {
 `useQuonfig` exposes the following:
 
 ```javascript
-const { isEnabled, get, loading, contextAttributes } = useQuonfig();
+const { isEnabled, get, loading, isReady, error, source, contextAttributes } = useQuonfig();
 ```
 
 Here's an explanation of each property:
 
-| property            | example                 | purpose                                                                                  |
-| ------------------- | ----------------------- | ---------------------------------------------------------------------------------------- |
-| `isEnabled`         | `isEnabled("new-logo")` | returns a boolean (default `false`) if a feature is enabled based on the current context |
-| `get`               | `get('retry-count')`    | returns the value of a flag or config                                                    |
-| `loading`           | `if (loading) { ... }`  | a boolean indicating whether quonfig content is being loaded                             |
-| `contextAttributes` | N/A                     | this is the context attributes object you passed when setting up the provider            |
-| `quonfig`           | N/A                     | the underlying JavaScript quonfig instance                                               |
-| `keys`              | N/A                     | an array of all the flag and config names in the current configuration                   |
+| property            | example                 | purpose                                                                                             |
+| ------------------- | ----------------------- | --------------------------------------------------------------------------------------------------- |
+| `isEnabled`         | `isEnabled("new-logo")` | returns a boolean (default `false`) if a feature is enabled based on the current context            |
+| `get`               | `get('retry-count')`    | returns the value of a flag or config                                                               |
+| `loading`           | `if (loading) { ... }`  | a boolean indicating whether quonfig content is being loaded                                        |
+| `isReady`           | `if (!isReady) { ... }` | `true` while serving live config (or SSR `initialFlags`); `false` on a cached copy or code defaults |
+| `error`             | `error?.message`        | the error the latest init rejected with; `undefined` once ready                                     |
+| `source`            | `source === "defaults"` | `"network"`, `"cache"` (last-known-good copy from an earlier visit) or `"defaults"`                 |
+| `contextAttributes` | N/A                     | this is the context attributes object you passed when setting up the provider                       |
+| `quonfig`           | N/A                     | the underlying JavaScript quonfig instance                                                          |
+| `keys`              | N/A                     | an array of all the flag and config names in the current configuration                              |
+
+### Startup failure
+
+If every delivery leg is down at page load, the client retries until `initTimeout` (5s by default)
+and then applies `onInitFailure`:
+
+- `"fail"` (default): `onError` fires and `error` is set. A cached last-known-good copy from an
+  earlier visit counts as config, so a returning visitor starts on it (`source: "cache"`) and no
+  error is raised. Only a first visit with no cache lands on code defaults (`source: "defaults"`).
+- `"wait"`: `loading` stays `true` until config arrives.
+- `"continue"`: start on the cache or code defaults without an error.
+
+In every mode the client keeps retrying in the background and heals: once delivery answers,
+`isReady` turns `true`, `error` clears and the hooks re-render with live values.
+
+```javascript
+const { isReady, source } = useQuonfig();
+if (!isReady && source === "defaults") console.warn("Quonfig: serving code defaults");
+```
+
+`onInitFailure`, `initTimeout` and the background retry without `pollInterval` come from
+`@quonfig/javascript` 1.6.0; with 1.5.x the props are ignored, a failed init heals through
+`pollInterval` only, and `isReady`/`error`/`source` still work.
 
 ### `useFlag` — per-key selector hook
 
