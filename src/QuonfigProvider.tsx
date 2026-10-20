@@ -334,6 +334,19 @@ function QuonfigProvider({
 
         const resolvedApiUrls = apiUrls ?? (apiUrl ? [apiUrl] : undefined);
 
+        const startPolling = () => {
+          if (!pollInterval) return;
+          // poll()'s first fetch can reject on a network blip, but the polling
+          // loop is still scheduled and self-heals on the next tick
+          // (qfg-8uw5). Attach a catch so that expected first-fetch rejection
+          // is a non-fatal warning, not an unhandled rejection, and don't
+          // route it through onError, which would surface a user-facing error
+          // for a transient blip that recovers on its own.
+          quonfigClient.poll({ frequencyInMs: pollInterval }).catch((err) => {
+            normalizedLogger.warn("Initial poll fetch failed; polling will retry", err);
+          });
+        };
+
         const initOptions: InitOptions = {
           context: contextAttributes,
           sdkKey,
@@ -352,21 +365,15 @@ function QuonfigProvider({
             setLoadedContextKey(contextKey);
             setLoading(false);
 
-            if (pollInterval) {
-              // poll()'s first fetch can reject on a startup network blip, but
-              // the polling loop is still scheduled and self-heals on the next
-              // tick (qfg-8uw5). Attach a catch so that expected first-fetch
-              // rejection is a non-fatal warning, not an unhandled rejection —
-              // and don't route it through onError, which would surface a
-              // user-facing error for a transient blip that recovers on its own.
-              quonfigClient.poll({ frequencyInMs: pollInterval }).catch((err) => {
-                normalizedLogger.warn("Initial poll fetch failed; polling will retry", err);
-              });
-            }
+            startPolling();
           })
           .catch((reason: any) => {
             if (isMounted.current) setLoading(false);
             onError(reason);
+            // qfg-9p4i.5: a failed init must not leave the tab on defaults
+            // forever. Start polling anyway (defaults / last-known-good are
+            // served meanwhile) so the client heals once delivery recovers.
+            if (isMounted.current) startPolling();
           });
       } else {
         mostRecentlyLoadingContextKey.current = contextKey;
