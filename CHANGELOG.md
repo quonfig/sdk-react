@@ -2,6 +2,21 @@ Changelog
 
 ## Unreleased
 
+> **UPGRADE (minor):** additive. `useQuonfig()` gains `isReady`, `error` and `source`, and the
+> provider takes `onInitFailure` and `initTimeout`. The default stays `onInitFailure: "fail"` with a
+> cached last-known-good copy counting as config, so who gets which values does not change.
+
+- New (minor, qfg-9p4i.11): `useQuonfig()` exposes `isReady` (true while serving live config or SSR
+  `initialFlags`), `error` (what the latest init rejected with; cleared once ready) and `source`
+  (`"network"`, `"cache"` or `"defaults"`). A failed startup used to be visible only through
+  `onError`; `loading` turned false exactly as on a healthy boot. `createQuonfigHook` hooks and
+  `QuonfigTestProvider` (always ready) carry the same fields.
+- New (minor, qfg-9p4i.11): `QuonfigProvider` passes `onInitFailure`
+  (`"fail" | "wait" | "continue"`) and `initTimeout` (ms) through to `@quonfig/javascript`'s
+  `init()`. Unset, the client's defaults apply (`"fail"`, 5000ms). They take effect with
+  `@quonfig/javascript` 1.6.0, which also retries a failed init in the background without
+  `pollInterval`; the peer floor moves to it in a follow-up release.
+
 - Fix (patch, qfg-9p4i.5): when `init()` fails at startup (every delivery leg down and no
   last-known-good copy) and `pollInterval` is set, the provider now starts polling anyway. Hooks
   keep serving defaults until delivery recovers, then re-render with live values. Before, the tab

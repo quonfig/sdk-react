@@ -11,6 +11,8 @@ import {
   createQuonfigHook,
   FrontEndConfigurationAccessor,
   TypedFrontEndConfigurationAccessor,
+  OnInitFailure,
+  QuonfigSource,
 } from "./QuonfigProvider";
 import { QuonfigTestProvider, QuonfigTestProviderProps } from "./QuonfigTestProvider";
 import type { Logger } from "./sdkLogger";
@@ -32,4 +34,6 @@ export {
   TypedFrontEndConfigurationAccessor,
   createQuonfigHook,
   Logger,
+  OnInitFailure,
+  QuonfigSource,
 };
