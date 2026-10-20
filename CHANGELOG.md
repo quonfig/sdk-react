@@ -1,5 +1,14 @@
 Changelog
 
+## Unreleased
+
+- Fix (patch, qfg-9p4i.5): when `init()` fails at startup (every delivery leg down and no
+  last-known-good copy) and `pollInterval` is set, the provider now starts polling anyway. Hooks
+  keep serving defaults until delivery recovers, then re-render with live values. Before, the tab
+  stayed on defaults until it reloaded. `onError` still fires once for the failed init. Without
+  `pollInterval` nothing changes. Also covers `@quonfig/react-native`, which re-exports the
+  provider.
+
 ## 1.5.1 - 2026-10-16
 
 - Requires `@quonfig/javascript` `^1.5.1` (peer + dev floor moves from `^1.5.0`). 1.5.1 stops
