@@ -51,10 +51,12 @@ describe("QuonfigProvider", () => {
     contextAttributes,
     onError,
     initialFlags,
+    initTimeout,
   }: {
     contextAttributes?: { [key: string]: Record<string, ContextValue> };
     onError?: (err: Error) => void;
     initialFlags?: Record<string, unknown>;
+    initTimeout?: number;
   }) =>
     render(
       <QuonfigProvider
@@ -62,6 +64,7 @@ describe("QuonfigProvider", () => {
         contextAttributes={contextAttributes}
         onError={onError}
         initialFlags={initialFlags}
+        initTimeout={initTimeout}
       >
         <MyComponent />
       </QuonfigProvider>
@@ -426,7 +429,9 @@ describe("QuonfigProvider", () => {
 
     global.fetch = jest.fn(() => Promise.reject(new Error("Network error"))) as jest.Mock;
 
-    renderInProvider({ contextAttributes: context, onError });
+    // A short initTimeout: from @quonfig/javascript 1.6 init() retries until
+    // initTimeout (5s client default) before it rejects (qfg-9p4i.14).
+    renderInProvider({ contextAttributes: context, onError, initTimeout: 20 });
 
     await act(async () => {
       await new Promise((r) => {

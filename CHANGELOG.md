@@ -17,6 +17,10 @@ Changelog
   `@quonfig/javascript` 1.6.0, which also retries a failed init in the background without
   `pollInterval`; the peer floor moves to it in a follow-up release.
 
+- Tests (qfg-9p4i.14 prep): the init-failure tests pass a short `initTimeout`, so the suite passes
+  against both `@quonfig/javascript` 1.5.x and 1.6.0 (which retries until `initTimeout` before
+  rejecting). Adds a 1.6-only test that a caught init failure heals without `pollInterval`.
+
 - Fix (patch, qfg-9p4i.5): when `init()` fails at startup (every delivery leg down and no
   last-known-good copy) and `pollInterval` is set, the provider now starts polling anyway. Hooks
   keep serving defaults until delivery recovers, then re-render with live values. Before, the tab

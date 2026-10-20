@@ -70,6 +70,7 @@ describe("QuonfigProvider logger prop (qfg-mol-1qw.4)", () => {
         sdkKey="sdk-key"
         contextAttributes={{ user: { email: "test@example.com" } }}
         logger={logger}
+        initTimeout={20}
       />
     );
 
@@ -79,14 +80,25 @@ describe("QuonfigProvider logger prop (qfg-mol-1qw.4)", () => {
       });
     });
 
-    expect(logger.error).toHaveBeenCalled();
-    expect(consoleErrorSpy).not.toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining("Network error"),
+      expect.any(Error)
+    );
+    // The provider's fallback (message, error) must not reach console.error.
+    // @quonfig/javascript >= 1.6 logs its own "[quonfig] init FAILED" line to
+    // the console (the js client takes no logger), so filter to the provider's
+    // call shape rather than asserting console.error was never called.
+    const providerShapedCalls = consoleErrorSpy.mock.calls.filter(
+      (args: unknown[]) => args[1] instanceof Error
+    );
+    expect(providerShapedCalls).toEqual([]);
   });
 
   it("falls back to console.warn / console.error when no logger prop is supplied", async () => {
     global.fetch = jest.fn(() => Promise.reject(new Error("Network error"))) as jest.Mock;
 
-    render(<QuonfigProvider sdkKey="sdk-key" />);
+    // initTimeout: js >= 1.6 retries until initTimeout before it rejects.
+    render(<QuonfigProvider sdkKey="sdk-key" initTimeout={20} />);
 
     await act(async () => {
       await new Promise((r) => {
