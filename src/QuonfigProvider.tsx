@@ -344,9 +344,6 @@ function QuonfigProvider({
     setFailedAtDataVersion(quonfigClient.dataVersion);
     setLoading(false);
   };
-  // SSR hydration via initialFlags counts as ready (like the client's SSR
-  // bootstrap) until this provider runs a real init().
-  const [hydratedOnly, setHydratedOnly] = React.useState(Boolean(initialFlags));
 
   const quonfigClient: Quonfig = useQuonfigClient();
   // qfg-goi1.2.9: initialFlags is applied once, on the first render, so the
@@ -410,8 +407,6 @@ function QuonfigProvider({
       if (mostRecentlyLoadingContextKey.current === undefined || !hasInitialized.current) {
         mostRecentlyLoadingContextKey.current = contextKey;
         hasInitialized.current = true;
-        setHydratedOnly(false);
-        setFailedAtDataVersion(undefined);
 
         if (!sdkKey) {
           throw new Error("QuonfigProvider: sdkKey is required");
@@ -456,7 +451,6 @@ function QuonfigProvider({
           .then(() => {
             if (!isMounted.current) return;
             setLoadedContextKey(contextKey);
-            setInitError(undefined);
             setLoading(false);
 
             startPolling();
@@ -541,7 +535,10 @@ function QuonfigProvider({
   // after a failed init; never while serving the stale cached copy.
   const fallbackReady =
     !loading && !stale && (failedAtDataVersion === undefined || dataVersion > failedAtDataVersion);
-  const isReady = hydratedOnly || (nativeReady ?? fallbackReady);
+  // SSR hydration via initialFlags counts as ready (like the client's SSR
+  // bootstrap) until this provider runs a real init().
+  const isReady =
+    (!!serverSnapshotFlags && !hasInitialized.current) || (nativeReady ?? fallbackReady);
   const error = isReady ? undefined : initError;
   const source: QuonfigSource = isReady ? "network" : stale ? "cache" : "defaults";
 
