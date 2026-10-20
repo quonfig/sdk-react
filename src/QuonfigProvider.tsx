@@ -245,6 +245,8 @@ export type QuonfigProviderProps = SharedSettings & {
   logger?: Logger;
 };
 
+const returnFalse = () => false;
+
 const getContextKey = (
   contextAttributes: Contexts,
   logger: NormalizedLogger,
@@ -332,13 +334,16 @@ function QuonfigProvider({
   // changes
   const [loadedContextKey, setLoadedContextKey] = React.useState("");
   // qfg-9p4i.11: readiness. `initError` is what the latest init() rejected
-  // with. `initSucceeded` and `failedAtDataVersion` drive the readiness
-  // fallback for a client without isReady() (@quonfig/javascript < 1.6).
+  // with. `failedAtDataVersion` (the client's dataVersion when init failed)
+  // drives the readiness fallback for a client without isReady()
+  // (@quonfig/javascript < 1.6): a later install means a poll healed it.
   const [initError, setInitError] = React.useState<Error | undefined>(undefined);
-  const [initSucceeded, setInitSucceeded] = React.useState(false);
-  const [failedAtDataVersion, setFailedAtDataVersion] = React.useState<number | undefined>(
-    undefined
-  );
+  const [failedAtDataVersion, setFailedAtDataVersion] = React.useState<number>();
+  const initFailed = (reason: unknown) => {
+    setInitError(reason as Error);
+    setFailedAtDataVersion(quonfigClient.dataVersion);
+    setLoading(false);
+  };
   // SSR hydration via initialFlags counts as ready (like the client's SSR
   // bootstrap) until this provider runs a real init().
   const [hydratedOnly, setHydratedOnly] = React.useState(Boolean(initialFlags));
@@ -364,20 +369,19 @@ function QuonfigProvider({
     (onChange: () => void) => quonfigClient.subscribe(onChange),
     [quonfigClient]
   );
-  const clientIsReady = (quonfigClient as unknown as { isReady?: () => boolean }).isReady;
-  const hasNativeReadiness = typeof clientIsReady === "function";
+  // undefined: the client has no isReady() (@quonfig/javascript < 1.6).
   const nativeReady = React.useSyncExternalStore(
     subscribeToClient,
     React.useCallback(
-      () => (hasNativeReadiness ? clientIsReady.call(quonfigClient) : false),
-      [quonfigClient, hasNativeReadiness, clientIsReady]
+      () => (quonfigClient as unknown as { isReady?: () => boolean }).isReady?.(),
+      [quonfigClient]
     ),
-    React.useCallback(() => false, [])
+    returnFalse
   );
   const stale = React.useSyncExternalStore(
     subscribeToClient,
-    React.useCallback(() => quonfigClient.stale === true, [quonfigClient]),
-    React.useCallback(() => false, [])
+    React.useCallback(() => quonfigClient.stale, [quonfigClient]),
+    returnFalse
   );
 
   const contextKey = getContextKey(contextAttributes, normalizedLogger, onError);
@@ -407,7 +411,7 @@ function QuonfigProvider({
         mostRecentlyLoadingContextKey.current = contextKey;
         hasInitialized.current = true;
         setHydratedOnly(false);
-        setInitSucceeded(false);
+        setFailedAtDataVersion(undefined);
 
         if (!sdkKey) {
           throw new Error("QuonfigProvider: sdkKey is required");
@@ -431,7 +435,12 @@ function QuonfigProvider({
           });
         };
 
-        const initOptions: InitOptions = {
+        // qfg-9p4i.11: onInitFailure / initTimeout pass through as given
+        // (undefined: the client's defaults, fail and 5s). Cast so this also
+        // builds against a client whose InitOptions predates them.
+        const initOptions = {
+          onInitFailure,
+          initTimeout,
           context: contextAttributes,
           sdkKey,
           apiUrls: resolvedApiUrls,
@@ -440,13 +449,7 @@ function QuonfigProvider({
           hedgeDelay,
           afterEvaluationCallback,
           collectEvaluationSummaries,
-        };
-        // qfg-9p4i.11: pass through only when set, so the client's own
-        // defaults (fail, 5s) apply otherwise. Assigned rather than typed on
-        // InitOptions so this also builds against a client that predates them.
-        const passThrough = initOptions as Record<string, unknown>;
-        if (onInitFailure !== undefined) passThrough.onInitFailure = onInitFailure;
-        if (initTimeout !== undefined) passThrough.initTimeout = initTimeout;
+        } as InitOptions;
 
         quonfigClient
           .init(initOptions)
@@ -454,17 +457,12 @@ function QuonfigProvider({
             if (!isMounted.current) return;
             setLoadedContextKey(contextKey);
             setInitError(undefined);
-            setInitSucceeded(true);
             setLoading(false);
 
             startPolling();
           })
           .catch((reason: any) => {
-            if (isMounted.current) {
-              setInitError(reason instanceof Error ? reason : new Error(String(reason)));
-              setFailedAtDataVersion(quonfigClient.dataVersion);
-              setLoading(false);
-            }
+            if (isMounted.current) initFailed(reason);
             onError(reason);
             // qfg-9p4i.5: a failed init must not leave the tab on defaults
             // forever. Start polling anyway (defaults / last-known-good are
@@ -487,7 +485,7 @@ function QuonfigProvider({
           });
       }
     } catch (e) {
-      setLoading(false);
+      initFailed(e);
       onError(e as Error);
     }
   }, [
@@ -539,13 +537,11 @@ function QuonfigProvider({
 
   // qfg-9p4i.11: readiness per spec B.4. With a client that has isReady()
   // (@quonfig/javascript >= 1.6) it is the source of truth. Otherwise: ready
-  // once init() resolved on fresh config, or once a poll installed config
+  // once init() settled without failing, or once a poll installed config
   // after a failed init; never while serving the stale cached copy.
   const fallbackReady =
-    !loading &&
-    !stale &&
-    (initSucceeded || (failedAtDataVersion !== undefined && dataVersion > failedAtDataVersion));
-  const isReady = hydratedOnly || (hasNativeReadiness ? nativeReady : fallbackReady);
+    !loading && !stale && (failedAtDataVersion === undefined || dataVersion > failedAtDataVersion);
+  const isReady = hydratedOnly || (nativeReady ?? fallbackReady);
   const error = isReady ? undefined : initError;
   const source: QuonfigSource = isReady ? "network" : stale ? "cache" : "defaults";
 
