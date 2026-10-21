@@ -39,7 +39,7 @@ const liveResponse = () =>
     ok: true,
     status: 200,
     headers: new Headers(),
-    json: () => ({ evaluations: { greeting: { value: { type: "string", value: "LIVE" } } } }),
+    json: async () => ({ evaluations: { greeting: { value: { type: "string", value: "LIVE" } } } }),
   });
 
 function Status() {

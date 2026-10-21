@@ -20,7 +20,7 @@ const stubConfig = (config: Config) =>
         ok: true,
         status: 200,
         headers: new Headers(),
-        json: () => {
+        json: async () => {
           setTimeout(resolve);
           return { evaluations: config };
         },

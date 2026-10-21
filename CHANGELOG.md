@@ -1,6 +1,6 @@
 Changelog
 
-## Unreleased
+## 1.6.0 - 2026-10-21
 
 > **UPGRADE (minor):** additive. `useQuonfig()` gains `isReady`, `error` and `source`, and the
 > provider takes `onInitFailure` and `initTimeout`. The default stays `onInitFailure: "fail"` with a
@@ -15,11 +15,14 @@ Changelog
   (`"fail" | "wait" | "continue"`) and `initTimeout` (ms) through to `@quonfig/javascript`'s
   `init()`. Unset, the client's defaults apply (`"fail"`, 5000ms). They take effect with
   `@quonfig/javascript` 1.6.0, which also retries a failed init in the background without
-  `pollInterval`; the peer floor moves to it in a follow-up release.
+  `pollInterval`.
+- Requires `@quonfig/javascript` `^1.6.0` (peer + dev floor moves from `^1.5.1`, qfg-9p4i.14), so
+  `onInitFailure`, `initTimeout`, `isReady` and the background init retry are always available.
 
 - Tests (qfg-9p4i.14 prep): the init-failure tests pass a short `initTimeout`, so the suite passes
   against both `@quonfig/javascript` 1.5.x and 1.6.0 (which retries until `initTimeout` before
-  rejecting). Adds a 1.6-only test that a caught init failure heals without `pollInterval`.
+  rejecting). Adds a 1.6-only test that a caught init failure heals without `pollInterval`. Test
+  fetch mocks now return a promise from `json()`, as a real `fetch` does (1.6.0 relies on it).
 
 - Fix (patch, qfg-9p4i.5): when `init()` fails at startup (every delivery leg down and no
   last-known-good copy) and `pollInterval` is set, the provider now starts polling anyway. Hooks

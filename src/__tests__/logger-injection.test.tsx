@@ -14,7 +14,7 @@ beforeEach(() => {
       ok: true,
       status: 200,
       headers: new Headers(),
-      json: () => ({ evaluations: {} }),
+      json: async () => ({ evaluations: {} }),
     })
   ) as jest.Mock;
 });

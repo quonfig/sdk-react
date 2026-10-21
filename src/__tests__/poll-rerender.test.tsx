@@ -34,7 +34,7 @@ const stubFetch = (initial: Record<string, unknown> = {}) => {
       ok: true,
       status: 200,
       headers: new Headers(),
-      json: () => ({ evaluations: initial }),
+      json: async () => ({ evaluations: initial }),
     })
   ) as jest.Mock;
 };
@@ -143,7 +143,7 @@ describe("QuonfigProvider unmounted during init (qfg-goi1.2.8)", () => {
       ok: true,
       status: 200,
       headers: new Headers(),
-      json: () => ({ evaluations: {} }),
+      json: async () => ({ evaluations: {} }),
     };
     let calls = 0;
     global.fetch = jest.fn(() => {

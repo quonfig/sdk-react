@@ -78,7 +78,7 @@ describe("QuonfigProvider", () => {
           ok: true,
           status: 200,
           headers: new Headers(),
-          json: () => {
+          json: async () => {
             setTimeout(resolve);
             return { evaluations: config };
           },
@@ -250,7 +250,7 @@ describe("QuonfigProvider", () => {
         ok: true,
         status: 200,
         headers: new Headers(),
-        json: () => ({ evaluations: {} }),
+        json: async () => ({ evaluations: {} }),
       })
     ) as jest.Mock;
 
@@ -286,7 +286,7 @@ describe("QuonfigProvider", () => {
         ok: true,
         status: 200,
         headers: new Headers(),
-        json: () => ({
+        json: async () => ({
           evaluations: {
             greeting: { value: { type: "string", value: "FETCHED FOR NEW CONTEXT" } },
           },
@@ -363,7 +363,7 @@ describe("QuonfigProvider", () => {
         ok: true,
         status: 200,
         headers: new Headers(),
-        json: () => ({ evaluations: {} }),
+        json: async () => ({ evaluations: {} }),
       })
     ) as jest.Mock;
     global.fetch = fetchMock;
@@ -398,7 +398,7 @@ describe("QuonfigProvider", () => {
         ok: true,
         status: 200,
         headers: new Headers(),
-        json: () => ({ evaluations: {} }),
+        json: async () => ({ evaluations: {} }),
       })
     ) as jest.Mock;
     global.fetch = fetchMock;
@@ -507,7 +507,7 @@ describe("createQuonfigHook functionality with QuonfigProvider", () => {
         ok: true,
         status: 200,
         headers: new Headers(),
-        json: () => ({
+        json: async () => ({
           evaluations: {
             greeting: { value: { type: "string", value: "Hello from Custom Hook" } },
             "secret.feature": { value: { type: "bool", value: true } },
@@ -585,7 +585,7 @@ describe("createQuonfigHook functionality with QuonfigProvider", () => {
         ok: true,
         status: 200,
         headers: new Headers(),
-        json: () => ({ evaluations: {} }),
+        json: async () => ({ evaluations: {} }),
       })
     ) as jest.Mock;
 
