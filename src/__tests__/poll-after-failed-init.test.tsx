@@ -54,7 +54,9 @@ describe("QuonfigProvider polls after a failed init (qfg-9p4i.5)", () => {
         ok: true,
         status: 200,
         headers: new Headers(),
-        json: () => ({ evaluations: { greeting: { value: { type: "string", value: "LIVE" } } } }),
+        json: async () => ({
+          evaluations: { greeting: { value: { type: "string", value: "LIVE" } } },
+        }),
       });
     });
     global.fetch = fetchMock as unknown as typeof fetch;
@@ -129,7 +131,7 @@ describe("QuonfigProvider polls after a failed init (qfg-9p4i.5)", () => {
           ok: true,
           status: 200,
           headers: new Headers(),
-          json: () => ({
+          json: async () => ({
             evaluations: { greeting: { value: { type: "string", value: "HEALED" } } },
           }),
         });

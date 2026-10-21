@@ -30,7 +30,7 @@ const stubFetch = (initial: Record<string, unknown> = {}) => {
       ok: true,
       status: 200,
       headers: new Headers(),
-      json: () => ({ evaluations: initial }),
+      json: async () => ({ evaluations: initial }),
     })
   ) as jest.Mock;
 };
