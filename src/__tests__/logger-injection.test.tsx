@@ -41,7 +41,9 @@ describe("QuonfigProvider logger prop (qfg-mol-1qw.4)", () => {
     expect(consoleWarnSpy).not.toHaveBeenCalled();
   });
 
-  it("routes the polling+initialFlags conflict warning through the supplied logger", () => {
+  // qfg-6vno.9: initialFlags no longer disables polling, so the provider must
+  // not warn that the two conflict.
+  it("does not warn about combining pollInterval with initialFlags", () => {
     const logger = makeSpyLogger();
 
     render(
@@ -57,7 +59,7 @@ describe("QuonfigProvider logger prop (qfg-mol-1qw.4)", () => {
     const warnedAboutPolling = logger.warn.mock.calls.some((call) =>
       String(call[0]).includes("Polling is not supported when hydrating flags via initialFlags")
     );
-    expect(warnedAboutPolling).toBe(true);
+    expect(warnedAboutPolling).toBe(false);
   });
 
   it("routes the default onError fallback through logger.error when no onError is supplied", async () => {

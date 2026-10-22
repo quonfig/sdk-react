@@ -239,12 +239,14 @@ describe("QuonfigProvider", () => {
     expect(updatedAlert).toHaveTextContent("UPDATED FROM CONTEXT");
   });
 
-  it("shows pre-hydrated flags without making a request", () => {
+  // qfg-6vno.9: the provider still runs init() after hydrating (for polling
+  // and telemetry), but the first render must already show the seed, before
+  // any fetch answers.
+  it("shows pre-hydrated flags on the first render, before any fetch answers", () => {
     const context = { user: { email: "test@example.com" } };
 
-    // Mock the fetch response to return nothing
-    // If this ran, we would end up rendering only default values
-    // and no secret feature
+    // An empty payload: if the first render waited on the fetch, it would
+    // show only default values and no secret feature.
     global.fetch = jest.fn(() =>
       Promise.resolve({
         ok: true,
@@ -273,26 +275,28 @@ describe("QuonfigProvider", () => {
     expect(secretFeature).toBeInTheDocument();
   });
 
-  // qfg-sdr4: the initialFlags (SSR hydration) path never calls init(), so the
-  // client has no loader. A later contextAttributes change used to route to
-  // updateContext(), which throws "Quonfig not initialized" -> onError, and the
-  // flags were never refetched for the new context.
+  // qfg-sdr4: the initialFlags (SSR hydration) path used to skip init(), so
+  // the client had no loader. A later contextAttributes change routed to
+  // updateContext(), which threw "Quonfig not initialized" -> onError, and the
+  // flags were never refetched for the new context. qfg-6vno.9: hydration now
+  // runs init() for the seeded context too (one fetch), then the context
+  // change refetches.
   it("loads flags for a new context after hydrating from initialFlags", async () => {
     let setContextAttributes: (attributes: Contexts) => void = () => {};
     const onError = jest.fn();
 
-    const fetchMock = jest.fn(() =>
+    const payload = (value: string) =>
       Promise.resolve({
         ok: true,
         status: 200,
         headers: new Headers(),
         json: async () => ({
-          evaluations: {
-            greeting: { value: { type: "string", value: "FETCHED FOR NEW CONTEXT" } },
-          },
+          evaluations: { greeting: { value: { type: "string", value } } },
         }),
-      })
-    ) as jest.Mock;
+      });
+    const fetchMock = jest
+      .fn(() => payload("FETCHED FOR NEW CONTEXT"))
+      .mockImplementationOnce(() => payload("My seeded greeting")) as jest.Mock;
     global.fetch = fetchMock;
 
     function Wrapper({ context }: { context: Contexts }) {
@@ -314,7 +318,7 @@ describe("QuonfigProvider", () => {
     render(<Wrapper context={{ user: { email: "test@example.com" } }} />);
 
     expect(screen.queryByRole("alert")).toHaveTextContent("My seeded greeting");
-    expect(fetchMock).not.toHaveBeenCalled();
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 
     act(() => {
       setContextAttributes({ user: { email: "foo@example.com" } });
@@ -323,7 +327,7 @@ describe("QuonfigProvider", () => {
     await waitFor(() =>
       expect(screen.queryByRole("alert")).toHaveTextContent("FETCHED FOR NEW CONTEXT")
     );
-    expect(fetchMock).toHaveBeenCalled();
+    expect(fetchMock.mock.calls.length).toBeGreaterThanOrEqual(2);
     expect(onError).not.toHaveBeenCalled();
   });
 

@@ -354,6 +354,9 @@ function QuonfigProvider({
   // (@quonfig/javascript < 1.6): a later install means a poll healed it.
   const [initError, setInitError] = React.useState<Error | undefined>(undefined);
   const [failedAtDataVersion, setFailedAtDataVersion] = React.useState<number>();
+  // qfg-6vno.9: whether an init() run by this provider has settled. Until it
+  // has, an initialFlags seed counts as ready.
+  const [initSettled, setInitSettled] = React.useState(false);
   const initFailed = (reason: unknown) => {
     setInitError(reason as Error);
     setFailedAtDataVersion(quonfigClient.dataVersion);
@@ -403,11 +406,10 @@ function QuonfigProvider({
     setInitialLoad(false);
     setLoadedContextKey(contextKey);
     setLoading(false);
-    mostRecentlyLoadingContextKey.current = contextKey;
-
-    if (pollInterval) {
-      normalizedLogger.warn("Polling is not supported when hydrating flags via initialFlags");
-    }
+    // qfg-6vno.9: the seed paints at once, and the init effect below still
+    // connects the client in the browser (it skips the loading state for a
+    // seeded init). Without that init the client never created its telemetry
+    // reporter, so hydrated evaluations were never reported, and never polled.
   }
 
   React.useEffect(() => {
@@ -417,9 +419,11 @@ function QuonfigProvider({
       return;
     }
 
-    setLoading(true);
     try {
       if (mostRecentlyLoadingContextKey.current === undefined || !hasInitialized.current) {
+        // qfg-6vno.9: a client seeded from initialFlags keeps serving the seed
+        // while init() fetches, so there is no loading state to show.
+        if (!(serverSnapshotFlags && !hasInitialized.current)) setLoading(true);
         mostRecentlyLoadingContextKey.current = contextKey;
         hasInitialized.current = true;
 
@@ -465,13 +469,17 @@ function QuonfigProvider({
           .init(initOptions)
           .then(() => {
             if (!isMounted.current) return;
+            setInitSettled(true);
             setLoadedContextKey(contextKey);
             setLoading(false);
 
             startPolling();
           })
           .catch((reason: any) => {
-            if (isMounted.current) initFailed(reason);
+            if (isMounted.current) {
+              setInitSettled(true);
+              initFailed(reason);
+            }
             onError(reason);
             // qfg-9p4i.5: a failed init must not leave the tab on defaults
             // forever. Start polling anyway (defaults / last-known-good are
@@ -479,6 +487,7 @@ function QuonfigProvider({
             if (isMounted.current) startPolling();
           });
       } else {
+        setLoading(true);
         mostRecentlyLoadingContextKey.current = contextKey;
 
         quonfigClient
@@ -551,9 +560,9 @@ function QuonfigProvider({
   const fallbackReady =
     !loading && !stale && (failedAtDataVersion === undefined || dataVersion > failedAtDataVersion);
   // SSR hydration via initialFlags counts as ready (like the client's SSR
-  // bootstrap) until this provider runs a real init().
-  const isReady =
-    (!!serverSnapshotFlags && !hasInitialized.current) || (nativeReady ?? fallbackReady);
+  // bootstrap) until this provider's init() settles; from then on the
+  // client's own answer decides.
+  const isReady = (!!serverSnapshotFlags && !initSettled) || (nativeReady ?? fallbackReady);
   const error = isReady ? undefined : initError;
   const source: QuonfigSource = isReady ? "network" : stale ? "cache" : "defaults";
 
