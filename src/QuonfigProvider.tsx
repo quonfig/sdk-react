@@ -201,7 +201,18 @@ export function useFlag(key: string): ConfigValue {
     (onChange: () => void) => client.subscribe(onChange),
     [client]
   );
-  const getSnapshot = React.useCallback(() => client.get(key), [client, key]);
+  // qfg-6vno.10: React reads the snapshot on every render, on every store
+  // notification and twice per render in dev, so it must not count as an
+  // evaluation. Read it with the client's non-recording `peek()` and record
+  // one evaluation per committed value in the effect below. A client without
+  // `peek()` (@quonfig/javascript before it shipped) keeps the old get() read
+  // and the effect stays silent, so nothing is counted twice.
+  const peekable = client as Quonfig & { peek?: (k: string) => ConfigValue };
+  const canPeek = typeof peekable.peek === "function";
+  const getSnapshot = React.useCallback(
+    () => (canPeek ? peekable.peek!(key) : client.get(key)),
+    [peekable, client, key, canPeek]
+  );
   // qfg-goi1.2.9: React uses this on the server and during client hydration.
   // Serve the provider's initialFlags, which are identical on both sides by
   // construction, so the first paint shows the real value without a hydration
@@ -212,7 +223,11 @@ export function useFlag(key: string): ConfigValue {
     (): ConfigValue => initialFlags?.[key] as ConfigValue,
     [initialFlags, key]
   );
-  return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const value = React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  React.useEffect(() => {
+    if (canPeek) client.get(key);
+  }, [client, key, value, canPeek]);
+  return value;
 }
 
 // qfg-lkpm.6: replacement for the old module-level `globalQuonfigIsTaken`
