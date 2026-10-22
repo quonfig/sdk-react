@@ -17,9 +17,11 @@ Changelog
   (one `get()`, one `afterEvaluationCallback`) per committed value, on mount and when the value
   changes. Before, every `getSnapshot` call (each render, each store notification, twice per render
   in dev) recorded one, so evaluation summaries and callback-driven exposure logging grew with
-  config churn times mounted hooks. Takes effect with the `@quonfig/javascript` release that adds
-  `peek()`; on an older client `useFlag` keeps its previous behavior. The peer floor moves after
-  that release.
+  config churn times mounted hooks.
+- Requires `@quonfig/javascript` `^1.7.0` (peer + dev floor moves from `^1.6.0`, qfg-27wr), the
+  release that adds the non-recording `peek()` `useFlag` now reads with. `QuonfigTestProvider`
+  answers `peek()` from its `config`, so `useFlag` under the test provider returns the configured
+  value.
 
 ## 1.6.0 - 2026-10-21
 

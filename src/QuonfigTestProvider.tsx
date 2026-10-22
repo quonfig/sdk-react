@@ -62,6 +62,8 @@ function QuonfigTestProvider({
 
   const value = React.useMemo(() => {
     quonfigClient.get = get;
+    // useFlag reads its snapshot with peek(); answer it from the same config.
+    quonfigClient.peek = get;
     quonfigClient.getDuration = getDuration;
     quonfigClient.isEnabled = isEnabled;
 
