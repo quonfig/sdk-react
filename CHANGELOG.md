@@ -1,5 +1,16 @@
 Changelog
 
+## Unreleased
+
+- Fix (minor, qfg-6vno.10): `useFlag` no longer counts React's snapshot reads as evaluations. It
+  reads the snapshot with `@quonfig/javascript`'s non-recording `peek()` and records one evaluation
+  (one `get()`, one `afterEvaluationCallback`) per committed value, on mount and when the value
+  changes. Before, every `getSnapshot` call (each render, each store notification, twice per render
+  in dev) recorded one, so evaluation summaries and callback-driven exposure logging grew with
+  config churn times mounted hooks. Takes effect with the `@quonfig/javascript` release that adds
+  `peek()`; on an older client `useFlag` keeps its previous behavior. The peer floor moves after
+  that release.
+
 ## 1.6.0 - 2026-10-21
 
 > **UPGRADE (minor):** additive. `useQuonfig()` gains `isReady`, `error` and `source`, and the
