@@ -186,6 +186,8 @@ export const useBaseQuonfig = () => React.useContext(QuonfigContext);
 // General hook that returns the context with any explicit type
 export const useQuonfig = (): ProvidedContext => useBaseQuonfig() as unknown as ProvidedContext;
 
+type Peekable = Quonfig & { peek?: (k: string) => ConfigValue };
+
 // qfg-lkpm.6: per-key selector hook. Subscribes via the underlying client's
 // notify list rather than React context, so a flag mutation only re-renders
 // components whose selected key actually changed. `useQuonfig()` re-renders
@@ -207,12 +209,10 @@ export function useFlag(key: string): ConfigValue {
   // one evaluation per committed value in the effect below. A client without
   // `peek()` (@quonfig/javascript before it shipped) keeps the old get() read
   // and the effect stays silent, so nothing is counted twice.
-  const peekable = client as Quonfig & { peek?: (k: string) => ConfigValue };
-  const canPeek = typeof peekable.peek === "function";
-  const getSnapshot = React.useCallback(
-    () => (canPeek ? peekable.peek!(key) : client.get(key)),
-    [peekable, client, key, canPeek]
-  );
+  const getSnapshot = React.useCallback(() => {
+    const c = client as Peekable;
+    return c.peek ? c.peek(key) : c.get(key);
+  }, [client, key]);
   // qfg-goi1.2.9: React uses this on the server and during client hydration.
   // Serve the provider's initialFlags, which are identical on both sides by
   // construction, so the first paint shows the real value without a hydration
@@ -225,8 +225,8 @@ export function useFlag(key: string): ConfigValue {
   );
   const value = React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   React.useEffect(() => {
-    if (canPeek) client.get(key);
-  }, [client, key, value, canPeek]);
+    if ((client as Peekable).peek) client.get(key);
+  }, [client, key, value]);
   return value;
 }
 
