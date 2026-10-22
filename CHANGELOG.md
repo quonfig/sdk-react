@@ -1,6 +1,6 @@
 Changelog
 
-## Unreleased
+## 1.7.0 - 2026-10-22
 
 - Fix (minor, qfg-6vno.9): a provider seeded from `initialFlags` (SSR hydration) now runs `init()`
   in the browser, so it sends evaluation telemetry and polls when `pollInterval` is set. Before, the
@@ -17,9 +17,12 @@ Changelog
   (one `get()`, one `afterEvaluationCallback`) per committed value, on mount and when the value
   changes. Before, every `getSnapshot` call (each render, each store notification, twice per render
   in dev) recorded one, so evaluation summaries and callback-driven exposure logging grew with
-  config churn times mounted hooks. Takes effect with the `@quonfig/javascript` release that adds
-  `peek()`; on an older client `useFlag` keeps its previous behavior. The peer floor moves after
-  that release.
+  config churn times mounted hooks.
+- Requires `@quonfig/javascript` `^1.8.0` (peer + dev floor moves from `^1.6.0`, qfg-27wr): 1.7.0
+  adds the non-recording `peek()` `useFlag` now reads with, and 1.8.0 counts reads of hydrated
+  values once the matching network config arrives, so a hydrated `useFlag` mount evaluation is
+  reported once. `QuonfigTestProvider` answers `peek()` from its `config`, so `useFlag` under the
+  test provider returns the configured value.
 
 ## 1.6.0 - 2026-10-21
 

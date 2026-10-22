@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import { Quonfig } from "@quonfig/javascript";
-import { QuonfigTestProvider, useQuonfig, createQuonfigHook } from "../index";
+import { QuonfigTestProvider, useQuonfig, useFlag, createQuonfigHook } from "../index";
 
 function MyComponent() {
   const { get, isEnabled, loading, keys } = useQuonfig();
@@ -220,5 +220,23 @@ describe("createQuonfigHook functionality with QuonfigTestProvider", () => {
     // Constructor should be called only once, method called for each render
     expect(constructorSpy).toHaveBeenCalledTimes(1);
     expect(methodSpy).toHaveBeenCalledTimes(4); // Initial render + 3 updates
+  });
+});
+
+// qfg-27wr: useFlag reads its snapshot with the client's peek(), so the test
+// provider must answer peek() from its config the same way it answers get().
+describe("QuonfigTestProvider with useFlag", () => {
+  function FlagView() {
+    const value = useFlag("greeting");
+    return <div data-testid="flag">{String(value)}</div>;
+  }
+
+  it("serves the configured value through useFlag", () => {
+    render(
+      <QuonfigTestProvider config={{ greeting: "Hi from useFlag" }}>
+        <FlagView />
+      </QuonfigTestProvider>
+    );
+    expect(screen.getByTestId("flag")).toHaveTextContent("Hi from useFlag");
   });
 });

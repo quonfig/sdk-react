@@ -108,7 +108,15 @@ describe("initialFlags hydration connects in the browser (qfg-6vno.9)", () => {
       await new Promise((r) => setTimeout(r, 20));
     });
 
-    expect(telemetryBodies().some((body) => body.includes('"g"'))).toBe(true);
+    // One mount evaluation, counted once: the hydrated read is recorded
+    // against the network config for `g` when it lands (qfg-27wr).
+    const gCount = telemetryBodies()
+      .flatMap((body) => JSON.parse(body).events)
+      .flatMap((e: any) => e.summaries.summaries)
+      .filter((s: any) => s.key === "g")
+      .flatMap((s: any) => s.counters)
+      .reduce((n: number, c: any) => n + c.count, 0);
+    expect(gCount).toBe(1);
   });
 
   it("keeps the seed and reaches onError once initTimeout elapses when the init fetch fails", async () => {
