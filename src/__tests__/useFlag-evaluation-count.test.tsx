@@ -8,7 +8,7 @@
  */
 
 import React from "react";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import { Quonfig } from "@quonfig/javascript";
 import { QuonfigProvider, useFlag, useQuonfig } from "../index";
@@ -157,10 +157,15 @@ describe("useFlag evaluation recording (qfg-6vno.10)", () => {
     expect(t.fooCallbacks() - callbacksBefore).toBe(1);
   });
 
-  it("falls back to get() for snapshots on a client without peek()", async () => {
-    delete proto.peek;
+  // Runs one value change of `foo` and returns how many times the client was
+  // read for `foo`, split by method. The snapshot schedule is React's, so it is
+  // the same whether the reads go through peek() or get().
+  async function oneValueChange() {
     const t = await mountFoo();
-    const getSpy = jest.spyOn(t.client(), "get");
+    const c = t.client() as unknown as Peekable & Quonfig;
+    const getSpy = jest.spyOn(c, "get");
+    const peekSpy = c.peek ? jest.spyOn(c as Required<Peekable>, "peek") : undefined;
+    const callbacksBefore = t.fooCallbacks();
 
     act(() => {
       t.client().setConfig({
@@ -171,9 +176,34 @@ describe("useFlag evaluation recording (qfg-6vno.10)", () => {
       } as any);
     });
     await waitFor(() => expect(screen.getByTestId("foo")).toHaveTextContent("FOO_UPDATED"));
+    await act(flushTimers);
 
-    // The value still flows; the hook adds no extra get() of its own on top
-    // of the snapshot reads, so a legacy client is never double-counted.
-    expect(getSpy.mock.calls.some(([k]) => k === "foo")).toBe(true);
+    const forFoo = (spy?: jest.SpyInstance) =>
+      spy ? spy.mock.calls.filter(([k]) => k === "foo").length : 0;
+    const counts = {
+      gets: forFoo(getSpy),
+      peeks: forFoo(peekSpy),
+      callbacks: t.fooCallbacks() - callbacksBefore,
+    };
+    jest.restoreAllMocks();
+    return counts;
+  }
+
+  it("falls back to get() for snapshots on a client without peek(), adding no get() of its own", async () => {
+    ensurePeek();
+    const withPeek = await oneValueChange();
+    cleanup();
+
+    delete proto.peek;
+    const legacy = await oneValueChange();
+
+    // The value still flows on a legacy client, read with get().
+    expect(legacy.peeks).toBe(0);
+    expect(legacy.gets).toBeGreaterThan(0);
+    // Every get() is one of React's snapshot reads: exactly as many as the
+    // peek() reads on a peek-capable client. The commit effect stays silent,
+    // so a legacy client is never counted once more on top of its old count.
+    expect(legacy.gets).toBe(withPeek.peeks);
+    expect(legacy.callbacks).toBe(legacy.gets);
   });
 });

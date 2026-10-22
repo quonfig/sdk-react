@@ -110,4 +110,29 @@ describe("initialFlags hydration connects in the browser (qfg-6vno.9)", () => {
 
     expect(telemetryBodies().some((body) => body.includes('"g"'))).toBe(true);
   });
+
+  it("keeps the seed and reaches onError once initTimeout elapses when the init fetch fails", async () => {
+    fetchMock.mockImplementation(() =>
+      Promise.resolve({ ok: false, status: 500, headers: new Headers(), json: async () => ({}) })
+    );
+    const onError = jest.fn();
+    render(
+      <QuonfigProvider
+        sdkKey="sdk-key"
+        contextAttributes={{ user: { key: "hydrated-init-500" } }}
+        initialFlags={{ g: "seed" }}
+        initTimeout={200}
+        onError={onError}
+      >
+        <Probe capture={() => {}} />
+      </QuonfigProvider>
+    );
+
+    // init() retries until initTimeout (default 5s) before it rejects, so
+    // onError comes at the deadline, not on the first failed fetch.
+    expect(onError).not.toHaveBeenCalled();
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(1), { timeout: 2000 });
+    expect(String(onError.mock.calls[0][0])).toContain("init FAILED");
+    expect(screen.getByTestId("g")).toHaveTextContent("seed");
+  });
 });

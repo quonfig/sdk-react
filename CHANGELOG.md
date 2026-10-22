@@ -9,7 +9,8 @@ Changelog
   look unused; `pollInterval` was ignored with a warning. The seed still paints on the first render
   with `loading: false` and `isReady: true`, and keeps serving until the init fetch answers; from
   then on `isReady`/`error`/`source` follow the client as on an unseeded boot. The init costs one
-  fetch for the seeded context, and a failed init now reaches `onError`. The "Polling is not
+  fetch for the seeded context, and a failed init now reaches `onError` once `initTimeout` elapses
+  (5s by default; until then the client retries and the seed keeps serving). The "Polling is not
   supported when hydrating flags via initialFlags" warning is gone.
 - Fix (minor, qfg-6vno.10): `useFlag` no longer counts React's snapshot reads as evaluations. It
   reads the snapshot with `@quonfig/javascript`'s non-recording `peek()` and records one evaluation
