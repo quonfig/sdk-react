@@ -193,8 +193,10 @@ export default async function RootLayout({ children }) {
 
 `initialFlags` is the flat-map shape `{ flagKey: value }`, e.g.
 `{ "new-logo": true, "retry-count": 3 }`. When `initialFlags` is set, the provider hydrates
-synchronously on first render — no loading flicker — and skips the initial fetch. Subsequent context
-changes still trigger fetches.
+synchronously on first render — no loading flicker, `loading` is `false` and `isReady` is `true`. In
+the browser it then connects in the background: one fetch for the same context (the seed keeps
+serving until it answers), evaluation telemetry, and polling if you set `pollInterval`. Subsequent
+context changes trigger fetches as usual.
 
 ### Pages Router (`getServerSideProps`)
 
@@ -220,8 +222,8 @@ export default function Page({ initialFlags }) {
   different evaluation and flag values can flicker.
 - `initialFlags` only applies on the first render. Don't expect changing it later to swap flags out
   — use `setConfig`/poll for that.
-- Don't combine `initialFlags` with `pollInterval` unless you want both — the provider warns at
-  runtime if you do.
+- `initialFlags` and `pollInterval` combine: the seed paints first, then the provider polls every
+  `pollInterval` ms.
 
 ## SSR / multi-tenant rendering
 

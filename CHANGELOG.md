@@ -2,6 +2,15 @@ Changelog
 
 ## Unreleased
 
+- Fix (minor, qfg-6vno.9): a provider seeded from `initialFlags` (SSR hydration) now runs `init()`
+  in the browser, so it sends evaluation telemetry and polls when `pollInterval` is set. Before, the
+  hydrate path skipped `init()` entirely: the client never created its telemetry reporter, so every
+  hydrated browser evaluation (the Next.js integration) went unreported and a flag in live use could
+  look unused; `pollInterval` was ignored with a warning. The seed still paints on the first render
+  with `loading: false` and `isReady: true`, and keeps serving until the init fetch answers; from
+  then on `isReady`/`error`/`source` follow the client as on an unseeded boot. The init costs one
+  fetch for the seeded context, and a failed init now reaches `onError`. The "Polling is not
+  supported when hydrating flags via initialFlags" warning is gone.
 - Fix (minor, qfg-6vno.10): `useFlag` no longer counts React's snapshot reads as evaluations. It
   reads the snapshot with `@quonfig/javascript`'s non-recording `peek()` and records one evaluation
   (one `get()`, one `afterEvaluationCallback`) per committed value, on mount and when the value
