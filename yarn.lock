@@ -1608,21 +1608,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@quonfig/javascript@npm:^1.8.0":
-  version: 1.8.0
-  resolution: "@quonfig/javascript@npm:1.8.0"
+"@quonfig/javascript@portal:../sdk-javascript::locator=%40quonfig%2Freact%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@quonfig/javascript@portal:../sdk-javascript::locator=%40quonfig%2Freact%40workspace%3A."
   dependencies:
     uuid: "npm:^9.0.1"
-  checksum: 10c0/a619c4bba55495f536782b3fc9783bca9e382c0d91177b80fd0e6e250485cd3fa311ce2f0f12f3de84ebfd02c82915c71e67450be7725a3f9ddb1d0cf0cb02f3
   languageName: node
-  linkType: hard
+  linkType: soft
 
 "@quonfig/react@workspace:.":
   version: 0.0.0-use.local
   resolution: "@quonfig/react@workspace:."
   dependencies:
     "@eslint/js": "npm:^10.0.1"
-    "@quonfig/javascript": "npm:^1.8.0"
+    "@quonfig/javascript": "portal:../sdk-javascript"
     "@size-limit/preset-small-lib": "npm:^11.1.6"
     "@testing-library/jest-dom": "npm:^5.16.5"
     "@testing-library/react": "npm:^13.3.0"
@@ -1647,7 +1646,7 @@ __metadata:
     typescript: "npm:~4.9.5"
     typescript-eslint: "npm:^8.67.0"
   peerDependencies:
-    "@quonfig/javascript": ^1.8.0
+    "@quonfig/javascript": ^2.0.0
     react: ^18 || ^19
   languageName: unknown
   linkType: soft
