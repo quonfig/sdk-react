@@ -1,5 +1,27 @@
 Changelog
 
+## 2.0.0 - unreleased
+
+Built on `@quonfig/javascript` 2.0 (the cross-SDK typed-getter contract, qfg-zvyy, and the qfg-xiub
+context-switch fix). Requires `@quonfig/javascript` `^2.0.0` (peer + dev).
+
+### UPGRADE to 2.0
+
+1. **Upgrade `@quonfig/javascript` to 2.x** alongside this package; read its UPGRADE section.
+2. **`getDuration(key, defaultValue?)`** takes an optional default and returns it for a missing key
+   or a non-duration value (including a stored string such as `"PT1S"`). It never throws. The
+   one-warning-per-key now comes from the client (`console.warn`) instead of the provider's `logger`
+   prop, because the client no longer throws for the provider to catch.
+3. **`isEnabled` is `true` only for a boolean `true`.** A `json` flag holding `true` is now `false`.
+4. **`QuonfigTestProvider` matches the real client.** `isEnabled` used to be `!!get(key)`, so a test
+   config of `"fast"`, `30` or `["a"]` read as enabled while the real client said `false`; it is now
+   `true` only for `true`. `getDuration` takes a default and returns it for a non-duration value,
+   warning once per key (it warned on every call). Tests that relied on a truthy non-boolean to
+   enable a flag must set `true`.
+5. **Switching `contextAttributes`** no longer keeps rendering the previous user's values while (or
+   after failing) fetching the new user's: the client serves its cached copy for the new context, or
+   your defaults, until the fetch lands (qfg-xiub).
+
 ## 1.7.0 - 2026-10-22
 
 - Fix (minor, qfg-6vno.9): a provider seeded from `initialFlags` (SSR hydration) now runs `init()`
