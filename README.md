@@ -87,8 +87,9 @@ Here's an explanation of each property:
 
 | property            | example                 | purpose                                                                                             |
 | ------------------- | ----------------------- | --------------------------------------------------------------------------------------------------- |
-| `isEnabled`         | `isEnabled("new-logo")` | returns a boolean (default `false`) if a feature is enabled based on the current context            |
+| `isEnabled`         | `isEnabled("new-logo")` | `true` only for a boolean flag whose value is `true`; `false` otherwise (never throws)              |
 | `get`               | `get('retry-count')`    | returns the value of a flag or config                                                               |
+| `getDuration`       | `getDuration('t', d)`   | a `{ ms, seconds }` duration, or the default `d` (`undefined` when omitted); never throws           |
 | `loading`           | `if (loading) { ... }`  | a boolean indicating whether quonfig content is being loaded                                        |
 | `isReady`           | `if (!isReady) { ... }` | `true` while serving live config (or SSR `initialFlags`); `false` on a cached copy or code defaults |
 | `error`             | `error?.message`        | the error the latest init rejected with; `undefined` once ready                                     |
@@ -96,6 +97,11 @@ Here's an explanation of each property:
 | `contextAttributes` | N/A                     | this is the context attributes object you passed when setting up the provider                       |
 | `quonfig`           | N/A                     | the underlying JavaScript quonfig instance                                                          |
 | `keys`              | N/A                     | an array of all the flag and config names in the current configuration                              |
+
+`isEnabled` and `getDuration` follow the typed-getter contract every Quonfig SDK shares (see the
+`@quonfig/javascript` README): no string coercion (a stored `"true"` is not enabled, a stored string
+`"PT1S"` is not a duration), and a value of the wrong type returns your default with one
+`console.warn` per key.
 
 ### Startup failure
 
@@ -308,6 +314,10 @@ it('shows the secret feature when it is enabled', async () => {
   expect(secretFeature).toBeInTheDocument();
 });
 ```
+
+`QuonfigTestProvider` answers `isEnabled` and `getDuration` the way the real client does:
+`isEnabled` is `true` only for `true`, and `getDuration` takes an ISO 8601 string (`"PT30S"`) or a
+parsed `{ ms, seconds }` and returns the default for anything else. Neither throws.
 
 ## Contributing
 

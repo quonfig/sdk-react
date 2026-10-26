@@ -100,7 +100,8 @@ export type BaseContext = {
             : never;
         }[keyof TypedFrontEndConfigurationRaw],
   >(
-    key: K
+    key: K,
+    defaultValue?: Duration
   ) => Duration | undefined;
   contextAttributes: Contexts;
   isEnabled: <
@@ -135,7 +136,7 @@ export type ProvidedContext = BaseContext & ClassMethods<QuonfigTypesafeClass>;
 
 export const defaultContext: BaseContext = {
   get: (_key) => undefined,
-  getDuration: (_key) => undefined,
+  getDuration: (_key, defaultValue) => defaultValue,
   isEnabled: (_key) => false,
   keys: [],
   loading: true,
@@ -524,26 +525,13 @@ function QuonfigProvider({
     };
   }, [quonfigClient]);
 
-  // qfg-goi1.2.8: the client's getDuration throws when the stored value is not
-  // a duration, and this hook runs during render, so one config edit could
-  // unmount the whole tree. Return undefined (the default) instead and warn
-  // once per key. Not routed through onError, which would fire every render.
-  // The raw client (`useQuonfig().quonfig.getDuration`) still throws.
-  const durationWarnedKeys = React.useRef(new Set<string>());
+  // @quonfig/javascript 2.0 getDuration never throws: a non-duration value
+  // returns the caller's default and the client warns once per key
+  // (qfg-zvyy). The 1.x wrapper that caught the throw (qfg-goi1.2.8) is gone.
   const getDuration = React.useCallback(
-    (key: string): Duration | undefined => {
-      try {
-        return quonfigClient.getDuration(key);
-      } catch (e) {
-        if (!durationWarnedKeys.current.has(key)) {
-          durationWarnedKeys.current.add(key);
-          const message = e instanceof Error ? e.message : String(e);
-          normalizedLogger.warn(`QuonfigProvider: ${message}; returning undefined.`);
-        }
-        return undefined;
-      }
-    },
-    [quonfigClient, normalizedLogger]
+    (key: string, defaultValue?: Duration): Duration | undefined =>
+      quonfigClient.getDuration(key, defaultValue),
+    [quonfigClient]
   );
 
   // qfg-9p4i.11: readiness per spec B.4. With a client that has isReady()

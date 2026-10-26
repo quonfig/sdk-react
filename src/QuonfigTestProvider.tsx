@@ -45,18 +45,33 @@ function QuonfigTestProvider({
   children,
 }: PropsWithChildren<QuonfigTestProviderProps>) {
   const get = (key: string) => config[key];
-  const getDuration = (key: string): Duration | undefined => {
+  // Same answers as the real client (qfg-zvyy): a non-duration value returns
+  // the caller's default and an isEnabled on anything but a boolean true is
+  // false. Neither throws; each warns once per key, never with the value.
+  const warnedKeys = React.useRef(new Set<string>());
+  const warnOnce = (key: string, reason: string) => {
+    if (warnedKeys.current.has(key)) return;
+    warnedKeys.current.add(key);
+    console.warn(
+      `QuonfigTestProvider: read of "${key}" returned no value; the caller's default applies: ${reason}`
+    );
+  };
+  const getDuration = (key: string, defaultValue?: Duration): Duration | undefined => {
     const value = config[key];
-    if (value === undefined) return undefined;
+    if (value === undefined) return defaultValue;
     const duration = toDuration(key, value);
     if (duration === undefined) {
-      console.warn(
-        `QuonfigTestProvider: value for key "${key}" is not a valid ISO 8601 duration; returning the default.`
-      );
+      warnOnce(key, "the value is not a valid ISO 8601 duration");
+      return defaultValue;
     }
     return duration;
   };
-  const isEnabled = (key: string) => !!get(key);
+  const isEnabled = (key: string) => {
+    const value = config[key];
+    if (value === undefined || typeof value === "boolean") return value === true;
+    warnOnce(key, "the value is not a boolean");
+    return false;
+  };
 
   const quonfigClient = useQuonfigClient();
 
