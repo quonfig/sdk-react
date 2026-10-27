@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 import { execSync } from "child_process";
 
 export default defineConfig({
-  entry: ["src/index.tsx"],
+  entry: ["src/index.tsx", "src/testing.tsx"],
   format: ["cjs", "esm"],
   dts: true,
   clean: true,
@@ -16,7 +16,10 @@ export default defineConfig({
   minify: false,
   sourcemap: true,
   treeshake: true,
-  splitting: false,
+  // Both entries share QuonfigProvider (and its React context) through a
+  // common chunk; without splitting the testing entry would carry its own
+  // context and root-entry hooks would not see QuonfigTestProvider.
+  splitting: true,
   onSuccess: async () => {
     // Run bundle creation only if not in CI
     if (!process.env.CI) {
