@@ -68,23 +68,6 @@ jobs:
             fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
           "
 
-      # PRE-RELEASE ONLY (qfg-zvyy.9). @quonfig/react 2.0.0 is built and
-      # tested against @quonfig/javascript 2.0.0, which is not on npm yet, so
-      # the devDependency is portal:../sdk-javascript (the monorepo layout) and
-      # this step builds that sibling at a pinned commit (quonfig/sdk-javascript
-      # PR #35). Release step, after @quonfig/javascript 2.0.0 is published:
-      # set the devDependency back to "^2.0.0", regenerate yarn.lock, and
-      # delete this step from both jobs. Until then release.yaml cannot publish
-      # this package: its `yarn install --immutable` has no sibling to resolve.
-      - name: Build pre-release @quonfig/javascript sibling
-        env:
-          SDK_JAVASCRIPT_SHA: 702347a6255093b04bf1a6c3e638c60971c1ac20
-        run: |
-          git clone --quiet https://github.com/quonfig/sdk-javascript.git ../sdk-javascript
-          git -C ../sdk-javascript checkout --quiet "$SDK_JAVASCRIPT_SHA"
-          npm --prefix ../sdk-javascript ci
-          npm --prefix ../sdk-javascript run build
-
       # --no-immutable is deliberate here: "Pin matrix React" above rewrites
       # package.json, so yarn.lock must be allowed to change. Every other
       # install (lint job, release.yaml) uses --immutable.
@@ -137,23 +120,6 @@ jobs:
           key: ${{ runner.os }}-lint-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-lint-yarn-
-
-      # PRE-RELEASE ONLY (qfg-zvyy.9). @quonfig/react 2.0.0 is built and
-      # tested against @quonfig/javascript 2.0.0, which is not on npm yet, so
-      # the devDependency is portal:../sdk-javascript (the monorepo layout) and
-      # this step builds that sibling at a pinned commit (quonfig/sdk-javascript
-      # PR #35). Release step, after @quonfig/javascript 2.0.0 is published:
-      # set the devDependency back to "^2.0.0", regenerate yarn.lock, and
-      # delete this step from both jobs. Until then release.yaml cannot publish
-      # this package: its `yarn install --immutable` has no sibling to resolve.
-      - name: Build pre-release @quonfig/javascript sibling
-        env:
-          SDK_JAVASCRIPT_SHA: 702347a6255093b04bf1a6c3e638c60971c1ac20
-        run: |
-          git clone --quiet https://github.com/quonfig/sdk-javascript.git ../sdk-javascript
-          git -C ../sdk-javascript checkout --quiet "$SDK_JAVASCRIPT_SHA"
-          npm --prefix ../sdk-javascript ci
-          npm --prefix ../sdk-javascript run build
 
       - name: Install modules
         run: yarn install --immutable
