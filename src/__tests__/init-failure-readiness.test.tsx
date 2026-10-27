@@ -14,7 +14,8 @@
 import React from "react";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
-import { QuonfigProvider, QuonfigTestProvider, quonfig, useQuonfig } from "../index";
+import { QuonfigProvider, quonfig, useQuonfig } from "../index";
+import { QuonfigTestProvider } from "../testing";
 
 let warnSpy: ReturnType<typeof jest.spyOn>;
 let errorSpy: ReturnType<typeof jest.spyOn>;

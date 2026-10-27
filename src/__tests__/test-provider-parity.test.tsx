@@ -2,7 +2,8 @@ import React from "react";
 import { render } from "@testing-library/react";
 import { Quonfig } from "@quonfig/javascript";
 import type { Duration } from "@quonfig/javascript";
-import { QuonfigTestProvider, useQuonfig } from "../index";
+import { useQuonfig } from "../index";
+import { QuonfigTestProvider } from "../testing";
 
 // qfg-zvyy.9: QuonfigTestProvider must answer isEnabled / getDuration exactly
 // like the real @quonfig/javascript client for the same stored value, across

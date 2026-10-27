@@ -2,7 +2,8 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import { Quonfig } from "@quonfig/javascript";
-import { QuonfigTestProvider, useQuonfig, useFlag, createQuonfigHook } from "../index";
+import { useQuonfig, useFlag, createQuonfigHook } from "../index";
+import { QuonfigTestProvider } from "../testing";
 
 function MyComponent() {
   const { get, isEnabled, loading, keys } = useQuonfig();

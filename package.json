@@ -20,6 +20,12 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs",
       "default": "./dist/index.cjs"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "import": "./dist/testing.mjs",
+      "require": "./dist/testing.cjs",
+      "default": "./dist/testing.cjs"
     }
   },
   "files": [
@@ -45,7 +51,7 @@
     {
       "name": "dist/index.mjs (gzipped)",
       "path": "dist/index.mjs",
-      "limit": "2.6 kB",
+      "limit": "2.2 kB",
       "gzip": true,
       "ignore": [
         "react",

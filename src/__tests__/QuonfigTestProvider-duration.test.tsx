@@ -1,7 +1,8 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
-import { QuonfigTestProvider, useQuonfig } from "../index";
+import { useQuonfig } from "../index";
+import { QuonfigTestProvider } from "../testing";
 
 // QuonfigTestProvider.getDuration validates like the real client
 // (qfg-2agi.14): an ISO 8601 string is parsed by @quonfig/javascript's own

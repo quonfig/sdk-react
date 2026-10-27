@@ -21,6 +21,19 @@ context-switch fix). Requires `@quonfig/javascript` `^2.0.0` (peer + dev).
 5. **Switching `contextAttributes`** no longer keeps rendering the previous user's values while (or
    after failing) fetching the new user's: the client serves its cached copy for the new context, or
    your defaults, until the fetch lands (qfg-xiub).
+6. **`QuonfigTestProvider` moved to `@quonfig/react/testing`** (qfg-qqkf). The root entry no longer
+   exports it (or `QuonfigTestProviderProps`), so the test double and its duration parsing stay out
+   of your production bundle (the main entry drops from 2.51 kB to 2.05 kB gzipped). Change the
+   import in your tests:
+
+   ```diff
+   - import { QuonfigTestProvider } from "@quonfig/react";
+   + import { QuonfigTestProvider } from "@quonfig/react/testing";
+   ```
+
+   Hooks keep coming from `@quonfig/react`; `useQuonfig` and `useFlag` see a `QuonfigTestProvider`
+   imported from the new path. Your test runner must resolve package `exports` (Jest 28+, Vitest,
+   and TypeScript with `moduleResolution` `node16`, `nodenext` or `bundler`).
 
 ## 1.7.0 - 2026-10-22
 

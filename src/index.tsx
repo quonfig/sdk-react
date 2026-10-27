@@ -14,15 +14,12 @@ import {
   OnInitFailure,
   QuonfigSource,
 } from "./QuonfigProvider";
-import { QuonfigTestProvider, QuonfigTestProviderProps } from "./QuonfigTestProvider";
 import type { Logger } from "./sdkLogger";
 
 export {
   QuonfigProvider,
-  QuonfigTestProvider,
   useQuonfig,
   useFlag,
-  QuonfigTestProviderProps,
   QuonfigProviderProps,
   ConfigValue,
   Contexts,

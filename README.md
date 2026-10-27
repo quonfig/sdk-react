@@ -261,7 +261,8 @@ const initialFlags = client.extract();
 ## Usage in your test suite
 
 Wrap the component under test in a `QuonfigTestProvider` and provide a config object to set up your
-test state.
+test state. It is imported from `@quonfig/react/testing` (since 2.0.0), so it stays out of your
+production bundle; the hooks still come from `@quonfig/react`.
 
 e.g. if you wanted to test the following trivial component
 
@@ -290,7 +291,7 @@ function MyComponent() {
 You could do the following in [jest]/[rtl]
 
 ```javascript
-import { QuonfigTestProvider } from '@quonfig/react';
+import { QuonfigTestProvider } from '@quonfig/react/testing';
 
 const renderInTestProvider = (config: {[key: string]: any}) => {
   render(

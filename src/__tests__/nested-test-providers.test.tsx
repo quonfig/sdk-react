@@ -1,13 +1,8 @@
 import React, { act } from "react";
 import "@testing-library/jest-dom/extend-expect";
 import { render, screen } from "@testing-library/react";
-import {
-  quonfig as globalQuonfig,
-  QuonfigProvider,
-  useQuonfig,
-  QuonfigTestProvider,
-  QuonfigTestProviderProps,
-} from "../index";
+import { quonfig as globalQuonfig, QuonfigProvider, useQuonfig } from "../index";
+import { QuonfigTestProvider, QuonfigTestProviderProps } from "../testing";
 
 type Provider = typeof QuonfigTestProvider | typeof QuonfigProvider;
 
