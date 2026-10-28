@@ -1,6 +1,7 @@
 import React, { act } from "react";
 import { render } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
+import { Quonfig } from "@quonfig/javascript";
 import { QuonfigProvider, Logger } from "../index";
 
 let consoleWarnSpy: ReturnType<typeof jest.spyOn>;
@@ -121,5 +122,53 @@ describe("QuonfigProvider logger prop (qfg-mol-1qw.4)", () => {
     expect(() => render(<QuonfigProvider sdkKey="sdk-key" logger={partialLogger} />)).not.toThrow();
 
     expect(partialLogger.warn).toHaveBeenCalled();
+  });
+});
+
+// qfg-qgnw: the logger prop is forwarded to the @quonfig/javascript client's
+// init(), so its own lines ("[quonfig] init FAILED", "init recovered", ...)
+// reach the same logger. A client release that predates the `logger` init
+// option ignores the extra key.
+describe("QuonfigProvider forwards logger to the client init() (qfg-qgnw)", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it("passes the supplied logger object through unchanged", async () => {
+    const initSpy = jest.spyOn(Quonfig.prototype, "init");
+    const logger = makeSpyLogger();
+
+    render(
+      <QuonfigProvider
+        sdkKey="sdk-key"
+        contextAttributes={{ user: { key: "alice" } }}
+        logger={logger}
+        onError={() => {}}
+      />
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    expect(initSpy).toHaveBeenCalled();
+    expect((initSpy.mock.calls[0][0] as { logger?: unknown }).logger).toBe(logger);
+  });
+
+  it("passes no logger when the prop is omitted (the client keeps its console default)", async () => {
+    const initSpy = jest.spyOn(Quonfig.prototype, "init");
+
+    render(
+      <QuonfigProvider
+        sdkKey="sdk-key"
+        contextAttributes={{ user: { key: "alice" } }}
+        onError={() => {}}
+      />
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    expect(initSpy).toHaveBeenCalled();
+    expect((initSpy.mock.calls[0][0] as { logger?: unknown }).logger).toBeUndefined();
   });
 });

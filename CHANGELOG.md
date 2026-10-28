@@ -1,5 +1,12 @@
 Changelog
 
+## Unreleased
+
+- The `logger` prop is now forwarded to the `@quonfig/javascript` client's `init()`, so the client's
+  own log lines (`[quonfig] init FAILED`, `init recovered`, ...) reach the same logger. Takes effect
+  with the `@quonfig/javascript` release after 2.0.0, which adds the `logger` init option; earlier
+  clients ignore it and keep logging to `console` (qfg-qgnw).
+
 ## 2.0.0 - unreleased
 
 Built on `@quonfig/javascript` 2.0 (the cross-SDK typed-getter contract, qfg-zvyy, and the qfg-xiub

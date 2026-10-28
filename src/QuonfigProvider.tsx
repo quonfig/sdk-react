@@ -457,6 +457,11 @@ function QuonfigProvider({
           hedgeDelay,
           afterEvaluationCallback,
           collectEvaluationSummaries,
+          // qfg-qgnw: the client's own log lines (init FAILED, init recovered,
+          // ...) go to the same logger. Passed raw, not normalized, so an
+          // omitted prop keeps the client's console default. A client that
+          // predates the `logger` option ignores it.
+          logger,
         } as InitOptions;
 
         quonfigClient
