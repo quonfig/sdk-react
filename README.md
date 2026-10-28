@@ -53,6 +53,7 @@ Here's an explanation of each provider prop:
 | `initialFlags`      | no       | `Record<string, unknown>`        | seed flag values evaluated on the server — see [Next.js / RSC integration](#nextjs--rsc-integration) below. |
 | `onInitFailure`     | no       | `"fail" \| "wait" \| "continue"` | what happens when no config is available by `initTimeout` — see [Startup failure](#startup-failure).        |
 | `initTimeout`       | no       | `number`                         | overall ms `init()` waits for config before `onInitFailure` applies (client default 5000).                  |
+| `logger`            | no       | `Logger`                         | receives the SDK's log lines instead of `console` — see [Routing SDK logs](#routing-sdk-logs-logger).       |
 
 > **`timeout` must stay above `hedgeDelay`.** The loader fires the primary URL first and, if it is
 > slow (no answer within `hedgeDelay`), also fires the secondary in parallel. If you set `timeout`
@@ -60,6 +61,27 @@ Here's an explanation of each provider prop:
 > hedge to error-only failover (the secondary is only tried after the primary fully times out). The
 > SDK logs a warning when this happens. Raise `hedgeDelay` toward your primary's measured p99 to
 > contact the secondary less often.
+
+### Routing SDK logs (`logger`)
+
+By default the provider and the client write their log lines to `console`. Pass a `logger` to send
+them to your own logger instead:
+
+```javascript
+<QuonfigProvider sdkKey={"YOUR_SDK_KEY"} contextAttributes={context} logger={myLogger}>
+  <App />
+</QuonfigProvider>
+```
+
+`Logger` is the same shape as the `logger` option of `@quonfig/javascript` and `@quonfig/node`:
+`warn` and `error` are required, `debug` and `info` are optional (lines at a missing level are
+dropped). `console`, Pino, Winston and Bunyan loggers fit it directly.
+
+The provider uses the logger for its own lines (missing `contextAttributes`, a failed first poll,
+the default `onError` fallback) and forwards it to the client's `init()`. The client's own lines,
+such as `[quonfig] init FAILED` and `init recovered`, follow it from the `@quonfig/javascript`
+release after 2.0.0. With `@quonfig/javascript` 2.0.0 and earlier the client ignores it, and those
+lines still go to `console`.
 
 ### Usage in Your Components
 
