@@ -7,7 +7,7 @@ Changelog
   with the `@quonfig/javascript` release after 2.0.0, which adds the `logger` init option; earlier
   clients ignore it and keep logging to `console` (qfg-qgnw).
 
-## 2.0.0 - unreleased
+## 2.0.0 - 2026-10-27
 
 Built on `@quonfig/javascript` 2.0 (the cross-SDK typed-getter contract, qfg-zvyy, and the qfg-xiub
 context-switch fix). Requires `@quonfig/javascript` `^2.0.0` (peer + dev).
