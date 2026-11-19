@@ -1640,7 +1640,7 @@ __metadata:
     prettier: "npm:^3.0.0"
     react: "npm:^19.1.1"
     react-dom: "npm:^19.1.1"
-    size-limit: "npm:^11.1.6"
+    size-limit: "npm:^14.3.0"
     ts-jest: "npm:^29.4.12"
     ts-node: "npm:^10.9.1"
     tsup: "npm:^8.4.0"
@@ -5686,6 +5686,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lilconfig@npm:^3.1.4":
+  version: 3.1.4
+  resolution: "lilconfig@npm:3.1.4"
+  checksum: 10c0/20ed0899f58a26b7be69564b8b2f2be770378a242b7bfe2522a9f88056a5cbe2b11ac533c3acdd7c27ce9f8317168040c41c0c037061e9da21e3bbe29393f3f8
+  languageName: node
+  linkType: hard
+
 "lines-and-columns@npm:^1.1.6":
   version: 1.2.4
   resolution: "lines-and-columns@npm:1.2.4"
@@ -7048,7 +7055,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"size-limit@npm:11.2.0, size-limit@npm:^11.1.6":
+"size-limit@npm:11.2.0":
   version: 11.2.0
   resolution: "size-limit@npm:11.2.0"
   dependencies:
@@ -7062,6 +7069,18 @@ __metadata:
   bin:
     size-limit: bin.js
   checksum: 10c0/c3613e20dfc227074d73098bfdd6fe274aed980bf133ad61a380032425bfa8b7d749c876dea50e9648a64cd57fb768edac9ffc1927100bcadf814255e44236f1
+  languageName: node
+  linkType: hard
+
+"size-limit@npm:^14.3.0":
+  version: 14.3.0
+  resolution: "size-limit@npm:14.3.0"
+  dependencies:
+    lilconfig: "npm:^3.1.4"
+    nanospinner: "npm:^1.2.2"
+  bin:
+    size-limit: bin.js
+  checksum: 10c0/8a0a7aded1c6b8ef37140e0bca581231d892b3fe46978b9b36c31680108df775105376efca152065a75e1557573d701844e4c68c3e272f6d3d75f045062ac1d8
   languageName: node
   linkType: hard
 
